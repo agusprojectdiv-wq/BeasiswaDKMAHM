@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (xlsx) CDN for Export Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- FontAwesome for professional illustrative icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,22 +33,38 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Print stylesheet: hanya menampilkan konten Detail Siswa saat Cetak/Export PDF */
+        @media print {
+            aside, header, .print\:hidden { display: none !important; }
+            body { background: #fff !important; }
+            main { overflow: visible !important; height: auto !important; }
+            #view-content { padding: 0 !important; }
+        }
     </style>
 </head>
-<body class="flex min-h-screen text-slate-800">
+<body class="flex min-h-screen text-slate-800 overflow-x-hidden">
+
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-slate-900/50 z-40 lg:hidden"></div>
 
     <!-- SIDEBAR -->
-    <aside class="w-72 bg-custom-navy text-white flex flex-col justify-between shrink-0 hidden lg:flex">
+    <aside id="sidebar" class="w-72 bg-custom-navy text-white flex-col justify-between shrink-0 hidden lg:flex fixed lg:static inset-y-0 left-0 z-50 overflow-y-auto">
         <div class="p-6">
             <!-- Brand Logo -->
-            <div class="flex items-center space-x-3 mb-8">
-                <div class="bg-custom-orange p-2.5 rounded-xl text-white shadow-md">
-                    <i class="fa-solid fa-hand-holding-heart text-xl"></i>
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-custom-orange p-2.5 rounded-xl text-white shadow-md">
+                        <i class="fa-solid fa-hand-holding-heart text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-base tracking-wide leading-tight">RUMAH ZAKAT</h1>
+                        <p class="text-xs text-slate-400 font-medium">Sistem Monitoring Beasiswa</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-base tracking-wide leading-tight">RUMAH ZAKAT</h1>
-                    <p class="text-xs text-slate-400 font-medium">Sistem Monitoring Beasiswa</p>
-                </div>
+                <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <!-- Menu Utama Navigasi -->
@@ -57,7 +75,7 @@
                     <i class="fa-solid fa-chart-pie text-lg w-5 text-center"></i>
                     <span>Dashboard</span>
                 </button>
-                <button onclick="switchView('daftar-siswa')" id="btn-daftar-siswa" class="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
+                <button onclick="switchView('daftar-siswa')" id="btn-daftar-siswa" class="hidden w-full items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
                     <i class="fa-solid fa-graduation-cap text-lg w-5 text-center"></i>
                     <span>Data Siswa</span>
                 </button>
@@ -76,6 +94,10 @@
                 <button class="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
                     <i class="fa-solid fa-file-invoice text-lg w-5 text-center"></i>
                     <span>Laporan</span>
+                </button>
+                <button onclick="switchView('data-mentor')" id="btn-data-mentor" class="hidden w-full items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
+                    <i class="fa-solid fa-chalkboard-user text-lg w-5 text-center"></i>
+                    <span>Data Mentor</span>
                 </button>
             </div>
         </div>
@@ -110,17 +132,20 @@
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <!-- HEADER -->
-        <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
-            <div>
-                <nav class="text-xs text-slate-400 font-medium flex items-center space-x-2">
+        <header class="bg-white border-b border-slate-200 px-3 md:px-6 py-3 md:py-4 flex items-center justify-between shrink-0 gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-slate-700 p-2 -ml-2 shrink-0">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <nav class="text-[10px] md:text-xs text-slate-400 font-medium flex items-center space-x-1.5 md:space-x-2 min-w-0 truncate">
                     <span id="breadcrumb-parent">Sistem Monitoring</span>
                     <span>&rsaquo;</span>
-                    <span id="breadcrumb-child" class="text-slate-600">Dashboard Utama</span>
+                    <span id="breadcrumb-child" class="text-slate-600 truncate">Dashboard Utama</span>
                 </nav>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <button onclick="goBack()" class="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition text-slate-600">
+            <div class="flex items-center space-x-2 md:space-x-4 shrink-0">
+                <button onclick="goBack()" class="hidden sm:flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition text-slate-600">
                     <i class="fa-solid fa-arrow-left"></i>
                     <span>Kembali</span>
                 </button>
@@ -128,20 +153,32 @@
                     <i class="fa-solid fa-bell text-lg"></i>
                     <span class="absolute top-1 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
-                <div class="flex items-center space-x-3 pl-2 border-l border-slate-200">
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-slate-800 leading-tight">Admin</p>
-                        <p class="text-[10px] text-slate-400 font-semibold leading-tight">Project Management</p>
+
+                <!-- AUTH AREA -->
+                <div class="pl-2 md:pl-3 border-l border-slate-200">
+                    <!-- GUEST STATE -->
+                    <div id="auth-guest" class="flex items-center">
+                        <button onclick="openLoginModal()" class="flex items-center gap-2 text-xs font-bold px-3 md:px-4 py-2 bg-custom-navy hover:bg-slate-800 text-white rounded-lg transition">
+                            <i class="fa-solid fa-right-to-bracket"></i> <span class="hidden sm:inline">Login Admin</span>
+                        </button>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-slate-200 overflow-hidden border border-slate-200">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Admin" class="w-full h-full object-cover">
+                    <!-- LOGGED IN STATE -->
+                    <div id="auth-user" class="hidden items-center space-x-3">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-xs font-bold text-slate-800 leading-tight" id="auth-user-label">-</p>
+                            <p class="text-[10px] text-slate-400 font-semibold leading-tight" id="auth-user-role">-</p>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-user-shield text-slate-500"></i>
+                        </div>
+                        <button onclick="logoutUser()" class="text-xs font-bold text-rose-600 hover:underline whitespace-nowrap">Logout</button>
                     </div>
                 </div>
             </div>
         </header>
 
         <!-- VIEW CONTAINER -->
-        <div id="view-content" class="p-6">
+        <div id="view-content" class="p-3 md:p-6">
             
             <!-- 1. VIEW: DASHBOARD -->
             <div id="view-dashboard" class="space-y-6">
@@ -160,6 +197,10 @@
                             <option>2024/2025</option>
                             <option>2025/2026</option>
                         </select>
+                        <button onclick="window.print()" class="flex items-center gap-2 text-xs font-bold px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg shadow-sm transition print:hidden">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Cetak PDF</span>
+                        </button>
                     </div>
                 </div>
 
@@ -182,8 +223,16 @@
                     </div>
                 </div>
 
-                <!-- Mid-Level Content Grid -->
+                <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Top 10 Hafalan Terbanyak -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Top 10 Hafalan Terbanyak</h3>
+                        <div id="top-hafalan-list" class="space-y-3.5">
+                            <!-- Data terisi otomatis melalui javascript -->
+                        </div>
+                    </div>
+
                     <!-- Berdasarkan Gender -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                         <div>
@@ -223,48 +272,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Dampak Sosial -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Dampak Sosial & Outcome Alumni</h3>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="p-2 bg-indigo-600 text-white rounded-lg"><i class="fa-solid fa-graduation-cap"></i></div>
-                                        <div>
-                                            <p class="text-xs font-bold text-slate-800">Melanjutkan Kuliah</p>
-                                            <p class="text-[10px] text-slate-400">Target kelulusan alumni</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-sm font-black text-indigo-700">77,3%</span>
-                                </div>
-                                <div class="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="p-2 bg-emerald-600 text-white rounded-lg"><i class="fa-solid fa-briefcase"></i></div>
-                                        <div>
-                                            <p class="text-xs font-bold text-slate-800">Alumni Langsung Bekerja</p>
-                                            <p class="text-[10px] text-slate-400">Pemberdayaan pasca sekolah</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-sm font-black text-emerald-700">16,4%</span>
-                                </div>
-                                <div class="pt-2 text-xs">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Pekerjaan Utama Orang Tua</span>
-                                    <div class="grid grid-cols-5 gap-1.5 text-center">
-                                        <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">33%</p><span class="text-[9px] text-slate-400">Buruh</span></div>
-                                        <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">24%</p><span class="text-[9px] text-slate-400">Tani</span></div>
-                                        <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">20%</p><span class="text-[9px] text-slate-400">Dagang</span></div>
-                                        <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">9%</p><span class="text-[9px] text-slate-400">Nelayan</span></div>
-                                        <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">14%</p><span class="text-[9px] text-slate-400">Lainnya</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Diagram Kehadiran Pembinaan & Top Hafalan -->
+                <!-- Row 2: Kehadiran Pembinaan (kiri) & Edukasi Rutin (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Kehadiran Pembinaan Berdasarkan Kota -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -283,11 +293,49 @@
                         <div class="relative h-72"><canvas id="kehadiranPembinaanChart"></canvas></div>
                     </div>
 
-                    <!-- Top 10 Hafalan Terbanyak -->
+                    <!-- Edukasi Rutin -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Edukasi Rutin</h3>
+                        <div class="relative flex-1 flex items-center justify-center h-72"><canvas id="edukasiRutinChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Dampak Sosial & Outcome Alumni -->
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Dampak Sosial -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Top 10 Hafalan Terbanyak</h3>
-                        <div id="top-hafalan-list" class="space-y-3.5">
-                            <!-- Data terisi otomatis melalui javascript -->
+                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Dampak Sosial & Outcome Alumni</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-indigo-600 text-white rounded-lg"><i class="fa-solid fa-graduation-cap"></i></div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800">Melanjutkan Kuliah</p>
+                                        <p class="text-[10px] text-slate-400">Target kelulusan alumni</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-black text-indigo-700">77,3%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-emerald-600 text-white rounded-lg"><i class="fa-solid fa-briefcase"></i></div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800">Alumni Langsung Bekerja</p>
+                                        <p class="text-[10px] text-slate-400">Pemberdayaan pasca sekolah</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-black text-emerald-700">16,4%</span>
+                            </div>
+                        </div>
+                        <div class="pt-4 text-xs">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Pekerjaan Utama Orang Tua</span>
+                            <div class="grid grid-cols-5 gap-1.5 text-center">
+                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">33%</p><span class="text-[9px] text-slate-400">Buruh</span></div>
+                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">24%</p><span class="text-[9px] text-slate-400">Tani</span></div>
+                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">20%</p><span class="text-[9px] text-slate-400">Dagang</span></div>
+                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">9%</p><span class="text-[9px] text-slate-400">Nelayan</span></div>
+                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">14%</p><span class="text-[9px] text-slate-400">Lainnya</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -303,13 +351,19 @@
                         </h2>
                         <p class="text-xs text-slate-400">Kelola informasi umum pendaftaran dan wilayah pembinaan seluruh anak asuh</p>
                     </div>
-                    <button onclick="openModal()" class="bg-custom-orange hover:bg-orange-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span>+ Input Anak Baru</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportTableToExcel('table-siswa', 'Data_Siswa')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export Excel</span>
+                        </button>
+                        <button onclick="openModal()" class="bg-custom-orange hover:bg-orange-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>+ Input Anak Baru</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-siswa">
                     <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Terintegrasi</span>
                         <div class="relative w-full sm:w-72">
@@ -331,23 +385,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50" id="table-siswa-body">
-                                <tr class="hover:bg-slate-50/50 transition" id="row-student-default">
-                                    <td class="p-4 font-bold text-slate-800">BSW-2026-001</td>
-                                    <td class="p-4 font-bold text-slate-700">Aisyah Putri Rahmawati</td>
-                                    <td class="p-4 font-semibold text-slate-600 flex items-center gap-2">
-                                        <i class="fa-solid fa-user-tie text-slate-400"></i> Ust. Ahmad Fauzi
-                                    </td>
-                                    <td class="p-4 font-medium text-slate-600">SMA Negeri 1 Bandung</td>
-                                    <td class="p-4 font-bold text-custom-orange">
-                                        <i class="fa-solid fa-map-location-dot mr-1"></i> Kota Bandung
-                                    </td>
-                                    <td class="p-4 text-center">
-                                        <div class="flex justify-center gap-3">
-                                            <button onclick="switchView('profil-penerima')" class="text-blue-600 hover:underline font-bold text-xs">Detail</button>
-                                            <button class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <!-- Data terisi otomatis melalui javascript: renderSiswaTable() -->
                             </tbody>
                         </table>
                     </div>
@@ -356,15 +394,21 @@
 
             <!-- 3. VIEW: PROFIL PENERIMA -->
             <div id="view-profil-penerima" class="hidden space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
-                        <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-user-check text-sm"></i></span>
-                        Profil & Monitoring Perkembangan Siswa
-                    </h2>
-                    <p class="text-xs text-slate-400">Pilih berkas siswa aktif di bawah untuk meninjau Indeks Kesehatan Belajar (Student Health Score)</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
+                            <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-user-check text-sm"></i></span>
+                            Profil & Monitoring Perkembangan Siswa
+                        </h2>
+                        <p class="text-xs text-slate-400">Pilih berkas siswa aktif di bawah untuk meninjau Indeks Kesehatan Belajar (Student Health Score)</p>
+                    </div>
+                    <button onclick="exportTableToExcel('table-profil-penerima', 'Profil_Penerima')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Export Excel</span>
+                    </button>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-profil-penerima">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs md:text-sm">
                             <thead>
@@ -377,32 +421,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50" id="profile-siswa-list">
-                                <tr class="hover:bg-slate-50/50 transition">
-                                    <td class="p-4 font-bold text-slate-800 flex items-center space-x-3">
-                                        <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
-                                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=80" alt="Aisyah" class="w-full h-full object-cover">
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-slate-800 leading-tight">Aisyah Putri Rahmawati</p>
-                                            <span class="text-[10px] font-semibold text-slate-400">ID: RZ-2023-001245</span>
-                                        </div>
-                                    </td>
-                                    <td class="p-4 font-semibold text-slate-600">Kota Bandung</td>
-                                    <td class="p-4 font-medium text-slate-600">XI IPA 2</td>
-                                    <td class="p-4">
-                                        <div class="flex items-center space-x-2">
-                                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                            <span class="font-extrabold text-slate-800">89</span>
-                                            <span class="text-slate-400 text-[10px] font-semibold">/100</span>
-                                        </div>
-                                    </td>
-                                    <td class="p-4 text-center">
-                                        <button onclick="viewStudentDetail('aisyah')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 mx-auto">
-                                            <span>Klik untuk Detail</span>
-                                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <!-- Data terisi otomatis melalui javascript: renderProfilPenerimaList() -->
                             </tbody>
                         </table>
                     </div>
@@ -411,6 +430,14 @@
 
             <!-- 4. VIEW: DETAIL SISWA -->
             <div id="view-student-detail" class="hidden space-y-6">
+                <!-- Print Action Bar (disembunyikan saat cetak) -->
+                <div class="flex justify-end print:hidden">
+                    <button onclick="cetakDetailSiswaPDF()" class="flex items-center gap-2 text-xs font-bold px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm transition">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Cetak / Export PDF</span>
+                    </button>
+                </div>
+
                 <!-- Row 1: Profile & Health Score Ring -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <!-- Profile Card -->
@@ -458,8 +485,8 @@
                     </div>
                 </div>
 
-                <!-- Row 1.5: 6 Key Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                <!-- Row 1.5: Key Metrics Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-graduation-cap text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Rata-rata</p><p class="text-lg font-bold text-slate-800">86.7</p></div>
@@ -475,14 +502,6 @@
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-trophy text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Prestasi</p><p class="text-lg font-bold text-slate-800">7 <span class="text-xs font-semibold text-slate-500">Sertif</span></p></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
-                        <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-heart text-lg animate-pulse"></i></div>
-                        <div><p class="text-[11px] text-slate-400 font-medium">Karakter</p><p class="text-lg font-bold text-slate-800">85</p></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
-                        <div class="p-3 bg-teal-50 text-teal-600 rounded-xl"><i class="fa-solid fa-award text-lg"></i></div>
-                        <div><p class="text-[11px] text-slate-400 font-medium">Status</p><p class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">Full</p></div>
                     </div>
                 </div>
 
@@ -541,8 +560,9 @@
                         <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                             <i class="fa-solid fa-timeline text-indigo-600 text-base"></i>
                             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Riwayat Pembinaan</h3>
+                            <span class="text-[9px] text-slate-300 font-semibold ml-auto normal-case"><i class="fa-solid fa-arrows-up-down mr-0.5"></i>scroll untuk lihat lainnya</span>
                         </div>
-                        <div class="relative pl-4 border-l-2 border-indigo-100 space-y-3 text-[11px] ml-1">
+                        <div class="relative pl-4 border-l-2 border-indigo-100 space-y-3 text-[11px] ml-1 max-h-[168px] overflow-y-auto pr-2">
                             <div>
                                 <span class="font-bold text-slate-800 block">Mentoring Akademik</span>
                                 <span class="text-slate-400">12 Mei 2026 - Bimbingan Belajar</span>
@@ -550,6 +570,26 @@
                             <div>
                                 <span class="font-bold text-slate-800 block">Setoran Hafalan</span>
                                 <span class="text-slate-400">05 Mei 2026 - Capaian Juz 4</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Pembinaan Karakter</span>
+                                <span class="text-slate-400">28 April 2026 - Kajian Akhlak Mulia</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Kunjungan Rumah</span>
+                                <span class="text-slate-400">15 April 2026 - Home Visit Mentor</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Mentoring Akademik</span>
+                                <span class="text-slate-400">02 April 2026 - Bimbingan Belajar</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Setoran Hafalan</span>
+                                <span class="text-slate-400">20 Maret 2026 - Capaian Juz 3</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Pembinaan Rutin Cabang</span>
+                                <span class="text-slate-400">08 Maret 2026 - Materi Fiqih Ibadah</span>
                             </div>
                         </div>
                     </div>
@@ -572,12 +612,18 @@
 
             <!-- 5. VIEW: PERKEMBANGAN ANAK -->
             <div id="view-perkembangan-anak" class="hidden space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
-                        <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-child text-sm"></i></span>
-                        Monitoring Perkembangan Anak
-                    </h2>
-                    <p class="text-xs text-slate-400">Kelola dan input evaluasi berkala capaian anak asuh di berbagai bidang pembinaan</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
+                            <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-child text-sm"></i></span>
+                            Monitoring Perkembangan Anak
+                        </h2>
+                        <p class="text-xs text-slate-400">Kelola dan input evaluasi berkala capaian anak asuh di berbagai bidang pembinaan</p>
+                    </div>
+                    <button id="pa-export-btn" onclick="switchPaTab('rekap'); exportTableToExcel('pa-tab-rekap-table-wrap', 'Rekap_Perkembangan_Anak')" class="hidden items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Export Excel</span>
+                    </button>
                 </div>
 
                 <!-- SUB TAB NAV: INPUT / REKAP -->
@@ -703,9 +749,11 @@
                         <table class="w-full text-left border-collapse text-xs md:text-sm">
                             <thead>
                                 <tr class="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold">
-                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/3">Nama Siswa</th>
+                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/4">Nama Siswa</th>
                                     <th class="p-4 uppercase tracking-wider text-[10px]">Prestasi Akademik</th>
                                     <th class="p-4 uppercase tracking-wider text-[10px]">Prestasi Non-Akademik</th>
+                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/6">Tahun Ajaran</th>
+                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/6">Rata-rata Nilai Raport</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="table-prestasi-body">
@@ -755,24 +803,15 @@
 
                 <!-- ============ SUB TAB: REKAP ============ -->
                 <div id="pa-tab-rekap" class="space-y-6 hidden">
-                    <!-- Search Periode -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Cari Berdasarkan Periode</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs items-end">
-                            <div>
-                                <label class="block font-bold text-slate-600 mb-1">Dari Tanggal</label>
-                                <input type="date" id="pa-rekap-dari" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 mb-1">Sampai Tanggal</label>
-                                <input type="date" id="pa-rekap-sampai" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
-                            </div>
-                            <div class="md:col-span-2">
-                                <button onclick="generateRekapAnak()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition flex items-center gap-2">
-                                    <i class="fa-solid fa-magnifying-glass"></i> Cari Rekap Periode
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Search Periode (Compact) -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
+                        <span class="font-bold text-slate-500 flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Periode:</span>
+                        <input type="date" id="pa-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
+                        <span class="text-slate-400">s/d</span>
+                        <input type="date" id="pa-rekap-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
+                        <button onclick="generateRekapAnak()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Cari
+                        </button>
                     </div>
 
                     <!-- Info Pembinaan Ringkas -->
@@ -799,7 +838,7 @@
                     </div>
 
                     <!-- Tabel Rekap -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="pa-tab-rekap-table-wrap">
                         <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center space-x-3">
                             <div class="p-2 bg-custom-orange text-white rounded-lg text-xs"><i class="fa-solid fa-table-list"></i></div>
                             <h3 class="text-sm font-bold text-slate-800">Rekap Perkembangan Anak</h3>
@@ -825,12 +864,18 @@
 
             <!-- 6. VIEW: PERKEMBANGAN ORANG TUA -->
             <div id="view-perkembangan-ortu" class="hidden space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
-                        <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-users text-sm"></i></span>
-                        Monitoring Perkembangan Orang Tua
-                    </h2>
-                    <p class="text-xs text-slate-400">Kelola dan input data evaluasi pembinaan berkala serta absensi para orang tua siswa</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
+                            <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-users text-sm"></i></span>
+                            Monitoring Perkembangan Orang Tua
+                        </h2>
+                        <p class="text-xs text-slate-400">Kelola dan input data evaluasi pembinaan berkala serta absensi para orang tua siswa</p>
+                    </div>
+                    <button id="po-export-btn" onclick="switchPoTab('rekap'); exportTableToExcel('po-tab-rekap-table-wrap', 'Rekap_Perkembangan_Ortu')" class="hidden items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Export Excel</span>
+                    </button>
                 </div>
 
                 <!-- SUB TAB NAV: INPUT / REKAP -->
@@ -923,24 +968,15 @@
 
                 <!-- ============ SUB TAB: REKAP ============ -->
                 <div id="po-tab-rekap" class="space-y-6 hidden">
-                    <!-- Search Periode -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Cari Berdasarkan Periode</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs items-end">
-                            <div>
-                                <label class="block font-bold text-slate-600 mb-1">Dari Tanggal</label>
-                                <input type="date" id="po-rekap-dari" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 mb-1">Sampai Tanggal</label>
-                                <input type="date" id="po-rekap-sampai" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
-                            </div>
-                            <div class="md:col-span-2">
-                                <button onclick="generateRekapOrtu()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition flex items-center gap-2">
-                                    <i class="fa-solid fa-magnifying-glass"></i> Cari Rekap Periode
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Search Periode (Compact) -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
+                        <span class="font-bold text-slate-500 flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Periode:</span>
+                        <input type="date" id="po-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
+                        <span class="text-slate-400">s/d</span>
+                        <input type="date" id="po-rekap-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
+                        <button onclick="generateRekapOrtu()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Cari
+                        </button>
                     </div>
 
                     <!-- Info Pembinaan Ringkas -->
@@ -967,7 +1003,7 @@
                     </div>
 
                     <!-- Tabel Rekap -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="po-tab-rekap-table-wrap">
                         <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center space-x-3">
                             <div class="p-2 bg-custom-orange text-white rounded-lg text-xs"><i class="fa-solid fa-table-list"></i></div>
                             <h3 class="text-sm font-bold text-slate-800">Rekap Perkembangan Orang Tua</h3>
@@ -990,14 +1026,152 @@
                 <!-- ============ END SUB TAB: REKAP ============ -->
             </div>
 
+            <!-- 7. VIEW: DATA MENTOR -->
+            <div id="view-data-mentor" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
+                            <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-chalkboard-user text-sm"></i></span>
+                            Data Mentor
+                        </h2>
+                        <p class="text-xs text-slate-400">Kelola data mentor / pembina serta pantau tingkat keaktifan pengisian data anak binaan</p>
+                    </div>
+                    <button onclick="switchMentorTab('rekap'); exportTableToExcel('mentor-tab-input-table-wrap', 'Data_Mentor')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Export Excel</span>
+                    </button>
+                </div>
+
+                <!-- SUB TAB NAV: INPUT / REKAP -->
+                <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl w-max">
+                    <button id="mentor-tab-btn-input" onclick="switchMentorTab('input')" class="px-5 py-2 rounded-lg text-xs font-bold transition bg-custom-orange text-white shadow-md">
+                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Input
+                    </button>
+                    <button id="mentor-tab-btn-rekap" onclick="switchMentorTab('rekap')" class="px-5 py-2 rounded-lg text-xs font-bold transition text-slate-500 hover:text-slate-700">
+                        <i class="fa-solid fa-table-list mr-1.5"></i> Rekap
+                    </button>
+                </div>
+
+                <!-- ============ SUB TAB: INPUT ============ -->
+                <div id="mentor-tab-input" class="space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Form Input Data Mentor</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 mb-1">Upload Foto Mentor</label>
+                                <div class="flex items-center gap-4">
+                                    <div id="preview-foto-mentor" class="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                        <i class="fa-solid fa-user text-slate-300 text-2xl"></i>
+                                    </div>
+                                    <input type="file" accept="image/*" id="in-mentor-foto" onchange="previewFotoMentor(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-orange-600">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Nama Mentor</label>
+                                <input type="text" id="in-mentor-nama" placeholder="Masukkan nama lengkap mentor" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Jenis Kelamin</label>
+                                <select id="in-mentor-gender" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 mb-1">Alamat</label>
+                                <input type="text" id="in-mentor-alamat" placeholder="Masukkan alamat lengkap" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Pekerjaan</label>
+                                <input type="text" id="in-mentor-pekerjaan" placeholder="Contoh: Guru Tahfidz" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Cabang</label>
+                                <input type="text" id="in-mentor-cabang" placeholder="Contoh: Cabang Bandung" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 mb-1">Keterangan</label>
+                                <textarea id="in-mentor-keterangan" rows="2" placeholder="Catatan tambahan tentang mentor" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-4">
+                            <button onclick="tambahMentor()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Simpan Data Mentor</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="mentor-tab-input-table-wrap">
+                        <div class="p-5 bg-slate-50/80 border-b border-slate-200">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Mentor Terdaftar</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs md:text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold">
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Foto</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Nama</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Jenis Kelamin</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Alamat</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Pekerjaan</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Cabang</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px]">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="table-mentor-body">
+                                    <!-- Data terisi otomatis melalui javascript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============ END SUB TAB: INPUT ============ -->
+
+                <!-- ============ SUB TAB: REKAP ============ -->
+                <div id="mentor-tab-rekap" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-custom-orange"></i> Rekap Keaktifan Mentor</h3>
+                        <p class="text-[11px] text-slate-400">Nilai keaktifan dihitung dari intensitas mentor mengisi data perkembangan anak binaannya (Pembinaan, Absensi, Setoran Hafalan, dsb).</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="mentor-rekap-grid">
+                        <!-- Data terisi otomatis melalui javascript -->
+                    </div>
+                </div>
+                <!-- ============ END SUB TAB: REKAP ============ -->
+            </div>
+
         </div>
     </main>
 
     <!-- INTERAKTIF MODAL POP-UP WIZARD -->
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-user-shield text-custom-orange"></i> Login Admin / Mentor</h3>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold leading-none">&times;</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-4">Masuk untuk mengakses seluruh menu & data sesuai wilayah pembinaan Anda.</p>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none" placeholder="Masukkan username">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none" placeholder="Masukkan password">
+                </div>
+                <p id="login-error" class="text-rose-600 text-[11px] font-semibold hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>Username atau password salah.</p>
+                <button onclick="loginUser()" class="w-full bg-custom-orange hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl shadow-md transition mt-1">Masuk</button>
+            </div>
+        </div>
+    </div>
+
     <div id="inputModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
             <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="font-extrabold text-slate-800 tracking-tight text-base uppercase flex items-center gap-2">
+                <h3 id="modal-form-title" class="font-extrabold text-slate-800 tracking-tight text-base uppercase flex items-center gap-2">
                     <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-user-plus text-xs"></i></span>
                     Form Registrasi Anak Baru
                 </h3>
@@ -1014,10 +1188,19 @@
             <form id="siswaForm" class="flex-1 overflow-y-auto p-6 space-y-4 text-xs md:text-sm">
                 <!-- STEP 1: DATA UMUM -->
                 <div class="form-step block space-y-4" id="step-1">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Upload Foto Siswa</label>
+                        <div class="flex items-center gap-4">
+                            <div id="preview-foto-siswa" class="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                <i class="fa-solid fa-user text-slate-300 text-2xl"></i>
+                            </div>
+                            <input type="file" accept="image/*" id="in-foto-siswa" onchange="previewFotoSiswa(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-orange-600">
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">ID Beasiswa (Otomatis)</label>
-                            <input type="text" id="in-id-beasiswa" value="BSW-2026-002" class="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-xl p-2.5 focus:outline-none font-semibold" readonly>
+                            <input type="text" id="in-id-beasiswa" value="RZ-2026-002" class="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-xl p-2.5 focus:outline-none font-semibold" readonly>
                         </div>
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">NIK / No. Kartu Keluarga</label>
@@ -1048,7 +1231,12 @@
                         </div>
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">Wilayah Pembinaan</label>
-                            <input type="text" id="in-wilayah" placeholder="Contoh: Bandung Timur" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            <select id="in-wilayah" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                                <option value="Bogor">Bogor</option>
+                                <option value="Bekasi">Bekasi</option>
+                                <option value="Depok">Depok</option>
+                                <option value="Jakarta">Jakarta</option>
+                            </select>
                         </div>
                     </div>
                     <div>
@@ -1058,6 +1246,14 @@
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Bulan Awal Mendapat Beasiswa</label>
                         <input type="date" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Status Beasiswa</label>
+                        <select id="in-status-beasiswa" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            <option value="Aktif" selected>Aktif</option>
+                            <option value="Dihentikan">Dihentikan</option>
+                            <option value="Lulus">Lulus</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1207,7 +1403,12 @@
             </form>
 
             <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
-                <button type="button" id="btnPrev" onclick="changeStep(-1)" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition invisible">Kembali</button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnPrev" onclick="changeStep(-1)" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition invisible">Kembali</button>
+                    <button type="button" id="btnHapus" onclick="hapusSiswaDariModal()" class="hidden px-4 py-2 border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i>Hapus Data
+                    </button>
+                </div>
                 <button type="button" id="btnNext" onclick="changeStep(1)" class="px-5 py-2 bg-custom-orange hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md transition">Lanjut</button>
             </div>
         </div>
@@ -1217,20 +1418,130 @@
     <script>
         let currentView = 'dashboard';
         let chartsInitialized = false;
+        let dashboardChartsInitialized = false;
         let currentStep = 1;
+        let editingSiswaIndex = null;
+
+        // ===== SISTEM LOGIN & KONTROL AKSES =====
+        const USERS = {
+            'adminutama':   { password: 'beasiswa_123', role: 'admin-utama', wilayah: null, label: 'Admin Utama' },
+            'mentorjakarta':{ password: 'dkmahm_123', role: 'mentor-wilayah', wilayah: 'Jakarta', label: 'Mentor Jakarta' },
+            'mentordepok':  { password: 'dkmahm_123', role: 'mentor-wilayah', wilayah: 'Depok', label: 'Mentor Depok' },
+            'mentorbekasi': { password: 'dkmahm_123', role: 'mentor-wilayah', wilayah: 'Bekasi', label: 'Mentor Bekasi' },
+            'mentorbogor':  { password: 'dkmahm_123', role: 'mentor-wilayah', wilayah: 'Bogor', label: 'Mentor Bogor' }
+        };
+        let currentUser = null; // null = Umum / belum login
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+            document.getElementById('sidebar').classList.toggle('flex');
+            document.getElementById('sidebar-backdrop').classList.toggle('hidden');
+        }
+
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginModal').classList.add('flex');
+            document.getElementById('login-error').classList.add('hidden');
+        }
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('flex');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+        }
+        function loginUser() {
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value;
+            const user = USERS[u];
+            if (user && user.password === p) {
+                currentUser = { username: u, ...user };
+                closeLoginModal();
+                applyAccessControl();
+                switchView('dashboard');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+        function logoutUser() {
+            currentUser = null;
+            applyAccessControl();
+            switchView('dashboard');
+        }
+
+        // Hanya menampilkan data siswa sesuai wilayah pembinaan mentor yang login (Admin Utama & Umum melihat semua)
+        function getVisibleSiswa() {
+            if (currentUser && currentUser.role === 'mentor-wilayah') {
+                return databaseSiswa.filter(s => s.wilayah === currentUser.wilayah);
+            }
+            return databaseSiswa;
+        }
+
+        // Mengatur menu & tombol yang tampil berdasarkan status login
+        function applyAccessControl() {
+            const isLoggedIn = !!currentUser;
+            const guestEl = document.getElementById('auth-guest');
+            const userEl = document.getElementById('auth-user');
+
+            if (isLoggedIn) {
+                guestEl.classList.add('hidden');
+                userEl.classList.remove('hidden'); userEl.classList.add('flex');
+                document.getElementById('auth-user-label').innerText = currentUser.label;
+                document.getElementById('auth-user-role').innerText = currentUser.wilayah ? `Wilayah ${currentUser.wilayah}` : 'Akses Penuh - Semua Wilayah';
+            } else {
+                guestEl.classList.remove('hidden');
+                userEl.classList.add('hidden'); userEl.classList.remove('flex');
+            }
+
+            // Menu Data Siswa & Data Mentor hanya untuk yang sudah login
+            ['btn-daftar-siswa', 'btn-data-mentor'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.toggle('hidden', !isLoggedIn);
+                el.classList.toggle('flex', isLoggedIn);
+            });
+
+            // Sub-tab Input & tombol Export Excel Perkembangan Anak/Ortu hanya untuk yang sudah login
+            ['pa-tab-btn-input', 'po-tab-btn-input', 'pa-export-btn', 'po-export-btn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.toggle('hidden', !isLoggedIn);
+            });
+
+            // Jika belum login dan sedang berada di menu terbatas, paksa ke Rekap / Dashboard
+            if (!isLoggedIn) {
+                if (document.getElementById('pa-tab-input') && !document.getElementById('pa-tab-input').classList.contains('hidden')) switchPaTab('rekap');
+                if (document.getElementById('po-tab-input') && !document.getElementById('po-tab-input').classList.contains('hidden')) switchPoTab('rekap');
+                if (currentView === 'daftar-siswa' || currentView === 'data-mentor') switchView('dashboard');
+            }
+
+            // Refresh tabel yang tersaring berdasarkan wilayah pembinaan
+            renderSiswaTable();
+            renderProfilPenerimaList();
+            dashboardChartsInitialized = false;
+            if (currentView === 'dashboard') {
+                populateKehadiranBulanOptions();
+                renderKehadiranChart();
+                renderTopHafalan();
+                renderEdukasiRutinChart();
+                dashboardChartsInitialized = true;
+            }
+        }
 
         // DB Siswa Virtual untuk Sinkronisasi Lintas Menu & Tabel
         let databaseSiswa = [
             {
-                id: 'BSW-2026-001',
+                id: 'RZ-2026-001',
                 nama: 'Aisyah Putri Rahmawati',
                 mentor: 'Ust. Ahmad Fauzi',
                 sekolah: 'SMA Negeri 1 Bandung',
-                wilayah: 'Kota Bandung',
+                wilayah: 'Jakarta',
                 kelas: 'XI IPA 2',
                 gender: 'Perempuan',
                 healthScore: 89,
-                statusEdukasi: 'Sudah'
+                statusEdukasi: 'Sudah',
+                statusBeasiswa: 'Aktif',
+                foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+                hasDetail: true
             }
         ];
 
@@ -1353,30 +1664,29 @@
             { nama: "An-Nas", ayat: 6, hal: 0.3, juz: 30 }
         ];
 
-        // ===== DATA DUMMY: KEHADIRAN PEMBINAAN PER KOTA PER BULAN =====
+        // ===== DATA DUMMY: KEHADIRAN PEMBINAAN PER WILAYAH PEMBINAAN PER BULAN =====
         const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
-        // Format tiap kota: array per bulan berisi [Hadir, Tidak Hadir]
+        // Format tiap wilayah: array per bulan berisi [Hadir, Tidak Hadir]
         const kehadiranPerKota = {
-            'Kota Bandung':   [[46, 4], [44, 6], [48, 2], [42, 8], [45, 5], [47, 3]],
-            'Kota Jakarta':   [[38, 7], [40, 5], [36, 9], [39, 6], [41, 4], [37, 8]],
-            'Kota Surabaya':  [[30, 5], [28, 7], [32, 3], [29, 6], [31, 4], [33, 2]],
-            'Kota Medan':     [[24, 6], [22, 8], [26, 4], [23, 7], [25, 5], [27, 3]],
-            'Kota Makassar':  [[20, 3], [19, 4], [21, 2], [18, 5], [22, 3], [23, 2]]
+            'Jakarta':  [[46, 4], [44, 6], [48, 2], [42, 8], [45, 5], [47, 3]],
+            'Bekasi':   [[38, 7], [40, 5], [36, 9], [39, 6], [41, 4], [37, 8]],
+            'Depok':    [[30, 5], [28, 7], [32, 3], [29, 6], [31, 4], [33, 2]],
+            'Bogor':    [[24, 6], [22, 8], [26, 4], [23, 7], [25, 5], [27, 3]]
         };
         let kehadiranChartInstance = null;
 
         // ===== DATA DUMMY: TOP 10 HAFALAN TERBANYAK =====
         const topHafalanData = [
-            { nama: 'Aisyah Putri Rahmawati', juz: 8.5, foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Ahmad Zaki Fadillah', juz: 7.8, foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Siti Aminah', juz: 7.2, foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Muhammad Rizky', juz: 6.9, foto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Nur Fadilah', juz: 6.5, foto: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Dedi Kurniawan', juz: 6.1, foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Rina Marlina', juz: 5.8, foto: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Fajar Ramadhan', juz: 5.4, foto: 'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Salsabila Putri', juz: 5.0, foto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Yusuf Hidayat', juz: 4.7, foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=100' }
+            { nama: 'Aisyah Putri Rahmawati', juz: 8.5, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Ahmad Zaki Fadillah', juz: 7.8, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Siti Aminah', juz: 7.2, wilayah: 'Depok', foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Muhammad Rizky', juz: 6.9, wilayah: 'Bogor', foto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Nur Fadilah', juz: 6.5, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Dedi Kurniawan', juz: 6.1, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Rina Marlina', juz: 5.8, wilayah: 'Depok', foto: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Fajar Ramadhan', juz: 5.4, wilayah: 'Bogor', foto: 'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Salsabila Putri', juz: 5.0, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100' },
+            { nama: 'Yusuf Hidayat', juz: 4.7, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=100' }
         ];
 
         // Isi dropdown periode bulan (Dari / Sampai) untuk grafik kehadiran
@@ -1406,7 +1716,9 @@
             if (isNaN(sampai)) sampai = bulanList.length - 1;
             if (dari > sampai) { const t = dari; dari = sampai; sampai = t; }
 
-            const labels = Object.keys(kehadiranPerKota);
+            const labels = currentUser && currentUser.role === 'mentor-wilayah'
+                ? Object.keys(kehadiranPerKota).filter(k => k === currentUser.wilayah)
+                : Object.keys(kehadiranPerKota);
             const dataHadir = [];
             const dataTidakHadir = [];
 
@@ -1448,7 +1760,16 @@
             if (!container) return;
             container.innerHTML = '';
 
-            const sorted = [...topHafalanData].sort((a, b) => b.juz - a.juz).slice(0, 10);
+            const sourceData = currentUser && currentUser.role === 'mentor-wilayah'
+                ? topHafalanData.filter(d => d.wilayah === currentUser.wilayah)
+                : topHafalanData;
+
+            if (sourceData.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Belum ada data hafalan untuk wilayah ini.</p>`;
+                return;
+            }
+
+            const sorted = [...sourceData].sort((a, b) => b.juz - a.juz).slice(0, 10);
             const maxJuz = sorted[0].juz;
 
             sorted.forEach((item, idx) => {
@@ -1473,7 +1794,229 @@
             });
         }
 
-        let dashboardChartsInitialized = false;
+        // ===== DIAGRAM EDUKASI RUTIN (Pie: Sudah / Belum) =====
+        let edukasiRutinChartInstance = null;
+        function renderEdukasiRutinChart() {
+            const canvas = document.getElementById('edukasiRutinChart');
+            if (!canvas) return;
+
+            const visibleSiswa = getVisibleSiswa();
+            const sudah = visibleSiswa.filter(s => s.statusEdukasi === 'Sudah').length;
+            const belum = visibleSiswa.length - sudah;
+
+            if (edukasiRutinChartInstance) edukasiRutinChartInstance.destroy();
+            edukasiRutinChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Sudah', 'Belum'],
+                    datasets: [{
+                        data: [sudah, belum],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        // ===== EXPORT KE EXCEL =====
+        // Fungsi generik: cari <table> di dalam container (by id), lalu export via SheetJS
+        function exportTableToExcel(containerId, filename) {
+            const container = document.getElementById(containerId);
+            const table = container ? container.querySelector('table') : null;
+            if (!table) {
+                alert('Tidak ada tabel yang dapat diekspor pada bagian ini.');
+                return;
+            }
+            const wb = XLSX.utils.table_to_book(table, { sheet: 'Data' });
+            XLSX.writeFile(wb, `${filename}.xlsx`);
+        }
+
+        // Export ringkasan Dashboard ke Excel (kartu agregat)
+        function exportDashboardToExcel() {
+            const summary = [
+                { Metrik: 'Total Penerima', Nilai: '1.245' },
+                { Metrik: 'Aktif', Nilai: '1.098 (88.2%)' },
+                { Metrik: 'Lulus / Alumni', Nilai: '137 (11.0%)' },
+                { Metrik: 'Edukasi Rutin - Sudah', Nilai: databaseSiswa.filter(s => s.statusEdukasi === 'Sudah').length },
+                { Metrik: 'Edukasi Rutin - Belum', Nilai: databaseSiswa.filter(s => s.statusEdukasi !== 'Sudah').length }
+            ];
+            const ws = XLSX.utils.json_to_sheet(summary);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Ringkasan Dashboard');
+            XLSX.writeFile(wb, 'Ringkasan_Dashboard.xlsx');
+        }
+
+        // ===== PREVIEW UPLOAD FOTO (Form Registrasi Siswa & Form Mentor) =====
+        function previewFotoSiswa(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('preview-foto-siswa').innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewFotoMentor(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('preview-foto-mentor').innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== CETAK / EXPORT PDF DETAIL SISWA =====
+        function cetakDetailSiswaPDF() {
+            window.print();
+        }
+
+        // ===== DATA MENTOR (Input / Rekap) =====
+        let databaseMentor = [
+            {
+                id: 'MTR-2026-001', nama: 'Ust. Ahmad Fauzi', jenisKelamin: 'Laki-laki',
+                alamat: 'Jl. Cikutra No. 12, Cibeunying Kidul, Bandung', pekerjaan: 'Guru Tahfidz',
+                cabang: 'Cabang Bandung', keterangan: 'Mentor senior, aktif membina anak asuh area Bandung Timur',
+                foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
+                keaktifan: 92
+            },
+            {
+                id: 'MTR-2026-002', nama: 'Ustzh. Fitriani Rahma', jenisKelamin: 'Perempuan',
+                alamat: 'Jl. Asia Afrika No. 8, Bandung', pekerjaan: 'Konselor Pendidikan',
+                cabang: 'Cabang Bandung', keterangan: 'Fokus pendampingan pembinaan orang tua',
+                foto: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=200',
+                keaktifan: 87
+            },
+            {
+                id: 'MTR-2026-003', nama: 'Ust. Rizki Maulana', jenisKelamin: 'Laki-laki',
+                alamat: 'Jl. Diponegoro No. 20, Jakarta Pusat', pekerjaan: 'Guru Ngaji',
+                cabang: 'Cabang Jakarta', keterangan: 'Rutin mengisi rekap absensi dan setoran hafalan',
+                foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+                keaktifan: 78
+            },
+            {
+                id: 'MTR-2026-004', nama: 'Ustzh. Nadia Salsabila', jenisKelamin: 'Perempuan',
+                alamat: 'Jl. Pemuda No. 15, Surabaya', pekerjaan: 'Guru Tahfidz',
+                cabang: 'Cabang Surabaya', keterangan: 'Baru bergabung, pengisian data masih perlu ditingkatkan',
+                foto: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=200',
+                keaktifan: 63
+            }
+        ];
+
+        // Render tabel Input Data Mentor
+        function generateMentorTable() {
+            const body = document.getElementById('table-mentor-body');
+            if (!body) return;
+            body.innerHTML = '';
+
+            databaseMentor.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-4"><div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200"><img src="${m.foto}" class="w-full h-full object-cover" alt="${m.nama}"></div></td>
+                    <td class="p-4 font-bold text-slate-800">${m.nama}</td>
+                    <td class="p-4 font-medium text-slate-600">${m.jenisKelamin}</td>
+                    <td class="p-4 font-medium text-slate-600">${m.alamat}</td>
+                    <td class="p-4 font-medium text-slate-600">${m.pekerjaan}</td>
+                    <td class="p-4 font-bold text-custom-orange">${m.cabang}</td>
+                    <td class="p-4 text-slate-500 text-xs">${m.keterangan || '-'}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        // Render grid Rekap Keaktifan Mentor (foto, nama, cabang, nilai keaktifan)
+        function generateMentorRekap() {
+            const grid = document.getElementById('mentor-rekap-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const sorted = [...databaseMentor].sort((a, b) => b.keaktifan - a.keaktifan);
+            sorted.forEach(m => {
+                const warnaNilai = m.keaktifan >= 85 ? 'text-emerald-600 bg-emerald-50 border-emerald-100'
+                                    : m.keaktifan >= 70 ? 'text-amber-600 bg-amber-50 border-amber-100'
+                                    : 'text-rose-600 bg-rose-50 border-rose-100';
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center flex flex-col items-center';
+                card.innerHTML = `
+                    <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-md mb-3">
+                        <img src="${m.foto}" class="w-full h-full object-cover" alt="${m.nama}">
+                    </div>
+                    <p class="text-xs font-bold text-slate-800 leading-tight">${m.nama}</p>
+                    <p class="text-[10px] text-custom-orange font-semibold mb-2">${m.cabang}</p>
+                    <span class="text-[11px] font-extrabold px-3 py-1 rounded-full border ${warnaNilai}">${m.keaktifan} / 100</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Sub Tab Nav: Input / Rekap pada Data Mentor
+        function switchMentorTab(tab) {
+            const btnInput = document.getElementById('mentor-tab-btn-input');
+            const btnRekap = document.getElementById('mentor-tab-btn-rekap');
+            const secInput = document.getElementById('mentor-tab-input');
+            const secRekap = document.getElementById('mentor-tab-rekap');
+            if (!secInput || !secRekap) return;
+
+            if (tab === 'rekap') {
+                secInput.classList.add('hidden');
+                secRekap.classList.remove('hidden');
+                btnRekap.classList.add('bg-custom-orange', 'text-white', 'shadow-md');
+                btnRekap.classList.remove('text-slate-500');
+                btnInput.classList.remove('bg-custom-orange', 'text-white', 'shadow-md');
+                btnInput.classList.add('text-slate-500');
+                generateMentorRekap();
+            } else {
+                secInput.classList.remove('hidden');
+                secRekap.classList.add('hidden');
+                btnInput.classList.add('bg-custom-orange', 'text-white', 'shadow-md');
+                btnInput.classList.remove('text-slate-500');
+                btnRekap.classList.remove('bg-custom-orange', 'text-white', 'shadow-md');
+                btnRekap.classList.add('text-slate-500');
+            }
+        }
+
+        // Simpan data mentor baru dari Form Input
+        function tambahMentor() {
+            const nama = document.getElementById('in-mentor-nama').value;
+            if (!nama) { alert('Nama mentor wajib diisi.'); return; }
+
+            const previewImg = document.querySelector('#preview-foto-mentor img');
+            const foto = previewImg ? previewImg.src : 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200';
+
+            const newMentor = {
+                id: `MTR-2026-${String(databaseMentor.length + 1).padStart(3, '0')}`,
+                nama: nama,
+                jenisKelamin: document.getElementById('in-mentor-gender').value,
+                alamat: document.getElementById('in-mentor-alamat').value || '-',
+                pekerjaan: document.getElementById('in-mentor-pekerjaan').value || '-',
+                cabang: document.getElementById('in-mentor-cabang').value || '-',
+                keterangan: document.getElementById('in-mentor-keterangan').value || '-',
+                foto: foto,
+                keaktifan: 75 // nilai awal (baseline) mentor baru sebelum ada aktivitas pengisian data
+            };
+            databaseMentor.push(newMentor);
+            generateMentorTable();
+
+            // Reset form
+            document.getElementById('in-mentor-nama').value = '';
+            document.getElementById('in-mentor-alamat').value = '';
+            document.getElementById('in-mentor-pekerjaan').value = '';
+            document.getElementById('in-mentor-cabang').value = '';
+            document.getElementById('in-mentor-keterangan').value = '';
+            document.getElementById('in-mentor-foto').value = '';
+            document.getElementById('preview-foto-mentor').innerHTML = '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
+
+            alert('Data mentor baru berhasil disimpan!');
+        }
+        let mentorDataInitialized = false;
 
         function switchView(viewId) {
             currentView = viewId;
@@ -1483,11 +2026,12 @@
             document.getElementById('view-student-detail').classList.add('hidden');
             document.getElementById('view-perkembangan-anak').classList.add('hidden');
             document.getElementById('view-perkembangan-ortu').classList.add('hidden');
+            document.getElementById('view-data-mentor').classList.add('hidden');
 
             const parent = document.getElementById('breadcrumb-parent');
             const child = document.getElementById('breadcrumb-child');
 
-            const buttons = ['btn-dashboard', 'btn-daftar-siswa', 'btn-profil-penerima', 'btn-perkembangan-anak', 'btn-perkembangan-ortu'];
+            const buttons = ['btn-dashboard', 'btn-daftar-siswa', 'btn-profil-penerima', 'btn-perkembangan-anak', 'btn-perkembangan-ortu', 'btn-data-mentor'];
             buttons.forEach(bId => document.getElementById(bId)?.classList.remove('bg-custom-orange', 'text-white', 'shadow-lg'));
 
             if (viewId === 'dashboard') {
@@ -1498,6 +2042,7 @@
                     populateKehadiranBulanOptions();
                     renderKehadiranChart();
                     renderTopHafalan();
+                    renderEdukasiRutinChart();
                     dashboardChartsInitialized = true;
                 }
             } else if (viewId === 'daftar-siswa') {
@@ -1513,13 +2058,22 @@
                 parent.innerText = "Perkembangan Anak"; child.innerText = "Input Evaluasi & Capaian";
                 document.getElementById('btn-perkembangan-anak')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
                 generatePerkembanganTables();
-                switchPaTab('input');
+                switchPaTab(currentUser ? 'input' : 'rekap');
             } else if (viewId === 'perkembangan-ortu') {
                 document.getElementById('view-perkembangan-ortu').classList.remove('hidden');
                 parent.innerText = "Perkembangan Orang Tua"; child.innerText = "Evaluasi & Absensi Wali";
                 document.getElementById('btn-perkembangan-ortu')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
                 generatePerkembanganOrtuTables();
-                switchPoTab('input');
+                switchPoTab(currentUser ? 'input' : 'rekap');
+            } else if (viewId === 'data-mentor') {
+                document.getElementById('view-data-mentor').classList.remove('hidden');
+                parent.innerText = "Data Mentor"; child.innerText = "Input & Rekap Mentor";
+                document.getElementById('btn-data-mentor')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                if (!mentorDataInitialized) {
+                    generateMentorTable();
+                    mentorDataInitialized = true;
+                }
+                switchMentorTab('input');
             }
         }
 
@@ -1563,7 +2117,8 @@
             const dari = document.getElementById('pa-rekap-dari')?.value;
             const sampai = document.getElementById('pa-rekap-sampai')?.value;
 
-            databaseSiswa.forEach((siswa, index) => {
+            getVisibleSiswa().forEach((siswa) => {
+                const index = databaseSiswa.indexOf(siswa);
                 // Ambil status kehadiran dari Section 2: Absensi
                 let kehadiran = '-';
                 const radios = document.getElementsByName(`absen-${index}`);
@@ -1638,7 +2193,8 @@
             const dari = document.getElementById('po-rekap-dari')?.value;
             const sampai = document.getElementById('po-rekap-sampai')?.value;
 
-            databaseSiswa.forEach((siswa, index) => {
+            getVisibleSiswa().forEach((siswa) => {
+                const index = databaseSiswa.indexOf(siswa);
                 let kehadiran = '-';
                 const radios = document.getElementsByName(`ortu-absen-${index}`);
                 radios.forEach(r => { if (r.checked) kehadiran = r.value; });
@@ -1671,7 +2227,8 @@
             prestasiBody.innerHTML = '';
             edukasiBody.innerHTML = '';
 
-            databaseSiswa.forEach((siswa, index) => {
+            getVisibleSiswa().forEach((siswa) => {
+                const index = databaseSiswa.indexOf(siswa);
                 // 1. Absensi Table
                 const trAbsen = document.createElement('tr');
                 trAbsen.className = "hover:bg-slate-50/50 transition";
@@ -1710,13 +2267,21 @@
                 `;
                 hafalanBody.appendChild(trHafalan);
 
-                // 3. Prestasi Table
+                // 3. Prestasi Table (termasuk Rata-rata Nilai Raport per Tahun Ajaran)
                 const trPrestasi = document.createElement('tr');
                 trPrestasi.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
                 trPrestasi.innerHTML = `
                     <td class="p-4 font-bold text-slate-800">${siswa.nama}</td>
                     <td class="p-4"><input type="text" placeholder="Masukkan prestasi akademik" class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange"></td>
                     <td class="p-4"><input type="text" placeholder="Masukkan prestasi non-akademik" class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange"></td>
+                    <td class="p-4">
+                        <select class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange bg-white">
+                            <option>2023/2024</option>
+                            <option>2024/2025</option>
+                            <option selected>2025/2026</option>
+                        </select>
+                    </td>
+                    <td class="p-4"><input type="number" min="0" max="100" step="0.01" placeholder="cth: 85.5" class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange"></td>
                 `;
                 prestasiBody.appendChild(trPrestasi);
 
@@ -1764,7 +2329,8 @@
             const ortuAbsensiBody = document.getElementById('table-ortu-absensi-body');
             ortuAbsensiBody.innerHTML = '';
 
-            databaseSiswa.forEach((siswa, index) => {
+            getVisibleSiswa().forEach((siswa) => {
+                const index = databaseSiswa.indexOf(siswa);
                 const trAbsen = document.createElement('tr');
                 trAbsen.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
                 trAbsen.innerHTML = `
@@ -1829,15 +2395,95 @@
                     initDetailCharts();
                     chartsInitialized = true;
                 }
+            } else {
+                alert('Detail lengkap untuk siswa ini akan tersedia setelah proses assessment & sinkronisasi data selesai.');
             }
         }
 
         function goBack() {
             if (currentView === 'student-detail') switchView('profil-penerima');
-            else if (currentView === 'profil-penerima' || currentView === 'daftar-siswa' || currentView === 'perkembangan-anak' || currentView === 'perkembangan-ortu') switchView('dashboard');
+            else if (currentView === 'profil-penerima' || currentView === 'daftar-siswa' || currentView === 'perkembangan-anak' || currentView === 'perkembangan-ortu' || currentView === 'data-mentor') switchView('dashboard');
         }
 
-        window.onload = function() { switchView('dashboard'); };
+        // Render ulang tabel Master Data Siswa (mendukung filter wilayah pembinaan sesuai login)
+        function renderSiswaTable() {
+            const body = document.getElementById('table-siswa-body');
+            if (!body) return;
+            body.innerHTML = '';
+            const visible = getVisibleSiswa();
+
+            if (visible.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 text-xs italic">Belum ada data siswa untuk wilayah pembinaan ini.</td></tr>`;
+                return;
+            }
+
+            visible.forEach((s) => {
+                const idx = databaseSiswa.indexOf(s);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800">${s.id}</td>
+                    <td class="p-4 font-bold text-slate-700">${s.nama}</td>
+                    <td class="p-4 font-semibold text-slate-600"><i class="fa-solid fa-user-tie text-slate-400 mr-1.5"></i>${s.mentor}</td>
+                    <td class="p-4 font-medium text-slate-600">${s.sekolah}</td>
+                    <td class="p-4 font-bold text-custom-orange"><i class="fa-solid fa-map-location-dot mr-1"></i>${s.wilayah}</td>
+                    <td class="p-4 text-center">
+                        <div class="flex justify-center gap-3">
+                            <button onclick="viewStudentDetail('${s.hasDetail ? 'aisyah' : 'generic'}')" class="text-blue-600 hover:underline font-bold text-xs">Detail</button>
+                            <button onclick="editSiswa(${idx})" class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button>
+                        </div>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        // Render ulang daftar Profil Penerima (mendukung filter wilayah pembinaan sesuai login)
+        function renderProfilPenerimaList() {
+            const body = document.getElementById('profile-siswa-list');
+            if (!body) return;
+            body.innerHTML = '';
+            const visible = getVisibleSiswa();
+
+            if (visible.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-xs italic">Belum ada data penerima untuk wilayah pembinaan ini.</td></tr>`;
+                return;
+            }
+
+            visible.forEach((s) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800 flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
+                            <img src="${s.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80'}" alt="${s.nama}" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800 leading-tight">${s.nama}</p>
+                            <span class="text-[10px] font-semibold text-slate-400">ID: ${s.id}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 font-semibold text-slate-600">${s.wilayah}</td>
+                    <td class="p-4 font-medium text-slate-600">${s.kelas}</td>
+                    <td class="p-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                            <span class="font-extrabold text-slate-800">${s.healthScore}</span>
+                            <span class="text-slate-400 text-[10px] font-semibold">/100</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="viewStudentDetail('${s.hasDetail ? 'aisyah' : 'generic'}')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 mx-auto">
+                            <span>Klik untuk Detail</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        window.onload = function() { applyAccessControl(); switchView('dashboard'); };
 
         // Populate drop-down list Surat pada menu input asessment (Step 4)
         function initAssessSuratOptions() {
@@ -1911,21 +2557,68 @@
 
         // Modal Wizard Logic
         function openModal() {
+            editingSiswaIndex = null;
             document.getElementById('inputModal').classList.remove('hidden');
             document.getElementById('inputModal').classList.add('flex');
-            
-            // Set ID beasiswa baru secara dinamis
+            document.getElementById('modal-form-title').innerText = 'Form Registrasi Anak Baru';
+            document.getElementById('btnHapus').classList.add('hidden');
+            document.getElementById('siswaForm').reset();
+            document.getElementById('preview-foto-siswa').innerHTML = '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
+
+            // Set ID beasiswa baru secara dinamis, format: RZ-2026-XXX
             const nextId = databaseSiswa.length + 1;
-            document.getElementById('in-id-beasiswa').value = `BSW-2026-0${nextId < 10 ? '0' + nextId : nextId}`;
+            document.getElementById('in-id-beasiswa').value = `RZ-2026-${String(nextId).padStart(3, '0')}`;
             
             currentStep = 1; 
             showStep(currentStep);
             initAssessSuratOptions(); // Load list surat
         }
 
+        // Membuka modal dalam mode edit, mengisi ulang data siswa yang sudah tersimpan
+        function editSiswa(index) {
+            editingSiswaIndex = index;
+            const s = databaseSiswa[index];
+            if (!s) return;
+
+            document.getElementById('inputModal').classList.remove('hidden');
+            document.getElementById('inputModal').classList.add('flex');
+            document.getElementById('modal-form-title').innerText = `Edit Data: ${s.nama}`;
+            document.getElementById('btnHapus').classList.remove('hidden');
+
+            document.getElementById('in-id-beasiswa').value = s.id;
+            document.getElementById('in-nama-siswa').value = s.nama;
+            document.getElementById('in-mentor').value = s.mentor;
+            document.getElementById('in-sekolah').value = s.sekolah;
+            document.getElementById('in-wilayah').value = s.wilayah;
+            document.getElementById('in-kelas').value = s.kelas;
+            document.getElementById('in-status-beasiswa').value = s.statusBeasiswa || 'Aktif';
+            document.getElementById('preview-foto-siswa').innerHTML = s.foto ? `<img src="${s.foto}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
+
+            currentStep = 1;
+            showStep(currentStep);
+            initAssessSuratOptions();
+            if (document.getElementById('assess-status-edukasi')) {
+                document.getElementById('assess-status-edukasi').value = s.statusEdukasi || 'Belum';
+            }
+        }
+
+        // Menghapus data siswa yang sedang diedit dari dalam modal
+        function hapusSiswaDariModal() {
+            if (editingSiswaIndex === null) return;
+            const s = databaseSiswa[editingSiswaIndex];
+            if (!confirm(`Yakin ingin menghapus data "${s.nama}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+
+            databaseSiswa.splice(editingSiswaIndex, 1);
+            renderSiswaTable();
+            renderProfilPenerimaList();
+            alert('Data siswa berhasil dihapus dari sistem.');
+            closeModal();
+        }
+
         function closeModal() {
             document.getElementById('inputModal').classList.add('hidden');
             document.getElementById('inputModal').classList.remove('flex');
+            editingSiswaIndex = null;
         }
 
         function showStep(step) {
@@ -1939,81 +2632,51 @@
             }
             
             document.getElementById('btnPrev').classList.toggle('invisible', step === 1);
-            document.getElementById('btnNext').innerText = step === 4 ? 'Simpan Data' : 'Lanjut';
+            document.getElementById('btnNext').innerText = step === 4 ? (editingSiswaIndex !== null ? 'Simpan Perubahan' : 'Simpan Data') : 'Lanjut';
         }
 
         function changeStep(n) {
             if (n === 1 && currentStep === 4) {
-                // Simpan Data Baru dari modal form ke virtual DB
+                // Simpan Data (Baru atau Hasil Edit) dari modal form ke virtual DB
                 const customId = document.getElementById('in-id-beasiswa').value;
                 const nama = document.getElementById('in-nama-siswa').value || 'Siswa Baru';
                 const mentor = document.getElementById('in-mentor').value || 'Budi Santoso';
                 const sekolah = document.getElementById('in-sekolah').value || 'SMA Negeri Terpadu';
-                const wilayah = document.getElementById('in-wilayah').value || 'Wilayah Pusat';
+                const wilayah = document.getElementById('in-wilayah').value || 'Jakarta';
                 const kelas = document.getElementById('in-kelas').value || 'XI';
                 const statusEdukasi = document.getElementById('assess-status-edukasi').value || 'Belum';
-                
-                const newStudent = {
-                    id: customId,
-                    nama: nama,
-                    mentor: mentor,
-                    sekolah: sekolah,
-                    wilayah: wilayah,
-                    kelas: kelas,
-                    gender: 'Perempuan',
-                    healthScore: 85,
-                    statusEdukasi: statusEdukasi
-                };
+                const statusBeasiswa = document.getElementById('in-status-beasiswa').value || 'Aktif';
+                const previewImgSiswa = document.querySelector('#preview-foto-siswa img');
+                const fotoSiswa = previewImgSiswa ? previewImgSiswa.src : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
 
-                databaseSiswa.push(newStudent);
-                
-                // Tambahkan baris baru ke tabel Master Data Siswa
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
-                tr.innerHTML = `<td class="p-4 font-bold text-slate-800">${customId}</td>
-                                <td class="p-4 font-bold text-slate-700">${nama}</td>
-                                <td class="p-4 font-semibold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-user-tie text-slate-400"></i> ${mentor}</td>
-                                <td class="p-4 font-medium text-slate-600">${sekolah}</td>
-                                <td class="p-4 font-bold text-custom-orange"><i class="fa-solid fa-map-location-dot mr-1"></i> ${wilayah}</td>
-                                <td class="p-4 text-center"><div class="flex justify-center gap-3"><button onclick="switchView('profil-penerima')" class="text-blue-600 hover:underline font-bold text-xs">Detail</button><button class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button></div></td>`;
-                document.getElementById('table-siswa-body').appendChild(tr);
+                if (editingSiswaIndex !== null) {
+                    // Mode Edit: perbarui data yang sudah ada
+                    const existing = databaseSiswa[editingSiswaIndex];
+                    databaseSiswa[editingSiswaIndex] = {
+                        ...existing,
+                        id: customId, nama, mentor, sekolah, wilayah, kelas,
+                        statusEdukasi, statusBeasiswa, foto: fotoSiswa
+                    };
+                    alert('Perubahan data siswa berhasil disimpan!');
+                } else {
+                    // Mode Tambah Baru
+                    const newStudent = {
+                        id: customId, nama, mentor, sekolah, wilayah, kelas,
+                        gender: 'Perempuan', healthScore: 85,
+                        statusEdukasi, statusBeasiswa, foto: fotoSiswa, hasDetail: false
+                    };
+                    databaseSiswa.push(newStudent);
+                    alert('Data anak asuh baru beserta hasil assessment awal berhasil disimpan ke sistem!');
+                }
 
-                // Tambahkan baris ke profil penerima beasiswa
-                const trProf = document.createElement('tr');
-                trProf.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
-                trProf.innerHTML = `
-                    <td class="p-4 font-bold text-slate-800 flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80" class="w-full h-full object-cover">
-                        </div>
-                        <div>
-                            <p class="font-bold text-slate-800 leading-tight">${nama}</p>
-                            <span class="text-[10px] font-semibold text-slate-400">ID: ${customId}</span>
-                        </div>
-                    </td>
-                    <td class="p-4 font-semibold text-slate-600">${wilayah}</td>
-                    <td class="p-4 font-medium text-slate-600">${kelas}</td>
-                    <td class="p-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                            <span class="font-extrabold text-slate-800">85</span>
-                            <span class="text-slate-400 text-[10px] font-semibold">/100</span>
-                        </div>
-                    </td>
-                    <td class="p-4 text-center">
-                        <button onclick="alert('Ini adalah detail untuk ${nama}')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 mx-auto">
-                            <span>Klik untuk Detail</span>
-                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </td>
-                `;
-                document.getElementById('profile-siswa-list').appendChild(trProf);
+                renderSiswaTable();
+                renderProfilPenerimaList();
 
-                alert('Data anak asuh baru beserta hasil assessment awal berhasil disimpan ke sistem!');
                 closeModal();
                 document.getElementById('siswaForm').reset();
                 document.getElementById('usiaDisplay').value = '';
                 document.getElementById('output-estimasi-juz').innerText = '0 Juz';
+                document.getElementById('preview-foto-siswa').innerHTML = '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
                 return;
             }
             currentStep += n; showStep(currentStep);
