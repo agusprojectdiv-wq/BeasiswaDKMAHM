@@ -10,28 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS (xlsx) CDN for Export Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Firebase SDK (Compat) untuk sinkronisasi database real-time -->
-    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
-<script
-
-const firebaseConfig = {
-
-  apiKey: "AIzaSyD-nafPz2YXnTxjbm_IA6xSkRz5_Xg-9vY",
-  authDomain: "beasiswadkmahm.firebaseapp.com",
-  projectId: "beasiswadkmahm",
-  storageBucket: "beasiswadkmahm.firebasestorage.app",
-  messagingSenderId: "191632508919",
-  appId: "1:191632508919:web:4c52fca242a13fbdaa50f2",
-  measurementId: "G-C1RJ72P5X8"
-
-};
-
-
-</script>
-
-
     <!-- FontAwesome for professional illustrative icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -167,7 +145,7 @@ const firebaseConfig = {
             </div>
             
             <div class="flex items-center space-x-2 md:space-x-4 shrink-0">
-                <button onclick="goBack()" class="flex items-center space-x-1.5 md:space-x-2 text-xs font-semibold px-2.5 md:px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition text-slate-600 shrink-0">
+                <button onclick="goBack()" class="hidden sm:flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition text-slate-600">
                     <i class="fa-solid fa-arrow-left"></i>
                     <span>Kembali</span>
                 </button>
@@ -201,10 +179,7 @@ const firebaseConfig = {
 
         <!-- VIEW CONTAINER -->
         <div id="view-content" class="p-3 md:p-6">
-
-            <!-- BANNER STATUS KONEKSI DATABASE -->
-            <div id="db-status-banner" class="hidden mb-4 rounded-xl border px-4 py-2.5 text-xs font-semibold flex items-center gap-2 print:hidden"></div>
-
+            
             <!-- 1. VIEW: DASHBOARD -->
             <div id="view-dashboard" class="space-y-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -818,7 +793,7 @@ const firebaseConfig = {
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="simpanPerkembanganAnak()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                    <button onclick="alert('Semua rekapan perkembangan anak asuh telah disimpan!')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan Semua Perkembangan</span>
                     </button>
@@ -983,7 +958,7 @@ const firebaseConfig = {
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="simpanPerkembanganOrtu()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                    <button onclick="alert('Semua rekapan perkembangan orang tua berhasil disimpan!')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan Perkembangan Orang Tua</span>
                     </button>
@@ -1417,13 +1392,7 @@ const firebaseConfig = {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">4. Jenjang Hafalan</label>
-                            <select id="assess-jenjang-hafalan" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
-                                <option value="">-- Pilih Jenjang --</option>
-                                <option value="Grade A">Grade A</option>
-                                <option value="Grade B">Grade B</option>
-                                <option value="Grade C">Grade C</option>
-                                <option value="Grade D">Grade D</option>
-                            </select>
+                            <input type="text" id="assess-jenjang-hafalan" placeholder="Contoh: Juz 30, Juz Amma, dsb." class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
                         </div>
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">5. Target Hafalan</label>
@@ -1451,7 +1420,7 @@ const firebaseConfig = {
         let chartsInitialized = false;
         let dashboardChartsInitialized = false;
         let currentStep = 1;
-        let editingSiswaDocId = null;
+        let editingSiswaIndex = null;
 
         // ===== SISTEM LOGIN & KONTROL AKSES =====
         const USERS = {
@@ -1462,155 +1431,6 @@ const firebaseConfig = {
             'mentorbogor':  { password: 'dkmahm_123', role: 'mentor-wilayah', wilayah: 'Bogor', label: 'Mentor Bogor' }
         };
         let currentUser = null; // null = Umum / belum login
-
-        // ============================================================================
-        // KONEKSI DATABASE (FIREBASE FIRESTORE) — SINKRONISASI REAL-TIME MULTI-USER
-        // ============================================================================
-        // CARA MENGAKTIFKAN:
-        // 1. Buka Firebase Console > Project Settings > General > Your apps > (Web App) > SDK setup and configuration > Config
-        // 2. Salin nilai apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId ke object di bawah ini
-        // 3. Pastikan Cloud Firestore sudah dibuat (mode Native) di project tersebut
-        // 4. Atur Firestore Security Rules agar bisa diakses (lihat catatan di akhir chat)
-        // Selama config masih placeholder ("GANTI..."), aplikasi berjalan di MODE LOKAL
-        // (data tersimpan sementara di browser, tidak tersinkron real-time antar pengguna).
-        // ============================================================================
-        const firebaseConfig = {
-            apiKey: "GANTI_DENGAN_API_KEY_ANDA",
-            authDomain: "GANTI_PROJECT_ID.firebaseapp.com",
-            projectId: "GANTI_PROJECT_ID",
-            storageBucket: "GANTI_PROJECT_ID.appspot.com",
-            messagingSenderId: "GANTI_SENDER_ID",
-            appId: "GANTI_APP_ID"
-        };
-
-        let db = null;
-        let firebaseReady = false;
-
-        function initFirebase() {
-            const banner = document.getElementById('db-status-banner');
-            try {
-                if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('GANTI') && typeof firebase !== 'undefined') {
-                    firebase.initializeApp(firebaseConfig);
-                    db = firebase.firestore();
-                    firebaseReady = true;
-                    console.log('[Firebase] Terhubung ke Firestore. Data akan tersinkron real-time antar pengguna.');
-                    banner.className = "mb-4 rounded-xl border px-4 py-2.5 text-xs font-semibold flex items-center gap-2 print:hidden bg-emerald-50 border-emerald-200 text-emerald-700";
-                    banner.innerHTML = `<i class="fa-solid fa-database"></i> Terhubung ke database real-time (Firebase Firestore).`;
-                    seedFirestoreIfEmpty();
-                    initFirestoreListeners();
-                } else {
-                    console.warn('[Firebase] firebaseConfig belum diisi — aplikasi berjalan dalam MODE LOKAL. Data hanya tersimpan sementara di browser ini dan tidak tersinkron real-time. Isi firebaseConfig di bagian atas <script> untuk mengaktifkan database.');
-                    banner.className = "mb-4 rounded-xl border px-4 py-2.5 text-xs font-semibold flex items-center gap-2 print:hidden bg-amber-50 border-amber-200 text-amber-700";
-                    banner.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Mode Lokal aktif — data belum tersinkron ke database real-time. Hubungkan Firebase di kode untuk mengaktifkan akses multi-user.`;
-                }
-                banner.classList.remove('hidden');
-            } catch (err) {
-                console.error('[Firebase] Gagal terhubung:', err);
-                banner.className = "mb-4 rounded-xl border px-4 py-2.5 text-xs font-semibold flex items-center gap-2 print:hidden bg-rose-50 border-rose-200 text-rose-700";
-                banner.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Gagal terhubung ke database. Aplikasi berjalan dalam mode lokal sementara.`;
-                banner.classList.remove('hidden');
-            }
-        }
-
-        // Mengisi Firestore dengan data contoh jika koleksi 'siswa' masih kosong (hanya sekali di awal)
-        async function seedFirestoreIfEmpty() {
-            if (!firebaseReady) return;
-            try {
-                const snap = await db.collection('siswa').limit(1).get();
-                if (snap.empty && databaseSiswa.length > 0) {
-                    const { _docId, ...seedData } = databaseSiswa[0];
-                    await db.collection('siswa').add(seedData);
-                }
-                const snapMentor = await db.collection('mentor').limit(1).get();
-                if (snapMentor.empty && databaseMentor.length > 0) {
-                    for (const m of databaseMentor) {
-                        const { _docId, ...seedData } = m;
-                        await db.collection('mentor').add(seedData);
-                    }
-                }
-            } catch (err) {
-                console.error('[Firebase] Gagal melakukan seeding data awal:', err);
-            }
-        }
-
-        // Listener real-time: setiap perubahan di Firestore langsung tersinkron ke semua pengguna
-        function initFirestoreListeners() {
-            if (!firebaseReady) return;
-
-            db.collection('siswa').onSnapshot(snapshot => {
-                databaseSiswa = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
-                renderSiswaTable();
-                renderProfilPenerimaList();
-                if (currentView === 'perkembangan-anak') generatePerkembanganTables();
-                if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
-                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); }
-            }, err => console.error('[Firebase] Gagal memuat data siswa:', err));
-
-            db.collection('mentor').onSnapshot(snapshot => {
-                databaseMentor = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
-                if (currentView === 'data-mentor') { generateMentorTable(); generateMentorRekap(); }
-            }, err => console.error('[Firebase] Gagal memuat data mentor:', err));
-        }
-
-        // Simpan (tambah/edit) data siswa — otomatis ke Firestore jika terhubung, atau ke array lokal jika belum
-        async function saveSiswaToDB(dataObj, docId = null) {
-            if (firebaseReady) {
-                if (docId) {
-                    await db.collection('siswa').doc(docId).set(dataObj, { merge: true });
-                } else {
-                    await db.collection('siswa').add(dataObj);
-                }
-                // Tabel akan otomatis ter-refresh melalui onSnapshot listener
-            } else {
-                if (docId) {
-                    const idx = databaseSiswa.findIndex(s => s._docId === docId);
-                    if (idx > -1) databaseSiswa[idx] = { ...databaseSiswa[idx], ...dataObj };
-                } else {
-                    databaseSiswa.push({ _docId: 'local-' + Date.now(), ...dataObj });
-                }
-                renderSiswaTable();
-                renderProfilPenerimaList();
-            }
-        }
-
-        // Hapus data siswa — otomatis ke Firestore jika terhubung, atau ke array lokal jika belum
-        async function deleteSiswaFromDB(docId) {
-            if (firebaseReady) {
-                await db.collection('siswa').doc(docId).delete();
-            } else {
-                databaseSiswa = databaseSiswa.filter(s => s._docId !== docId);
-                renderSiswaTable();
-                renderProfilPenerimaList();
-            }
-        }
-
-        // Simpan data mentor baru — otomatis ke Firestore jika terhubung, atau ke array lokal jika belum
-        async function saveMentorToDB(dataObj) {
-            if (firebaseReady) {
-                await db.collection('mentor').add(dataObj);
-            } else {
-                databaseMentor.push({ _docId: 'local-' + Date.now(), ...dataObj });
-                generateMentorTable();
-                generateMentorRekap();
-            }
-        }
-
-        // Simpan sesi pembinaan (Perkembangan Anak / Orang Tua) sebagai riwayat permanen ke Firestore
-        async function saveSesiPembinaan(collectionName, sesiData) {
-            if (firebaseReady) {
-                try {
-                    await db.collection(collectionName).add({ ...sesiData, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                    return true;
-                } catch (err) {
-                    console.error(`[Firebase] Gagal menyimpan ke ${collectionName}:`, err);
-                    alert('Gagal menyimpan ke database. Periksa koneksi Firebase Anda.');
-                    return false;
-                }
-            } else {
-                console.log(`[Mode Lokal] Sesi ${collectionName} dicatat sementara (tidak permanen):`, sesiData);
-                return true;
-            }
-        }
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('hidden');
@@ -1710,7 +1530,6 @@ const firebaseConfig = {
         // DB Siswa Virtual untuk Sinkronisasi Lintas Menu & Tabel
         let databaseSiswa = [
             {
-                _docId: 'seed-aisyah',
                 id: 'RZ-2026-001',
                 nama: 'Aisyah Putri Rahmawati',
                 mentor: 'Ust. Ahmad Fauzi',
@@ -2062,7 +1881,6 @@ const firebaseConfig = {
         // ===== DATA MENTOR (Input / Rekap) =====
         let databaseMentor = [
             {
-                _docId: 'seed-mentor-1',
                 id: 'MTR-2026-001', nama: 'Ust. Ahmad Fauzi', jenisKelamin: 'Laki-laki',
                 alamat: 'Jl. Cikutra No. 12, Cibeunying Kidul, Bandung', pekerjaan: 'Guru Tahfidz',
                 cabang: 'Cabang Bandung', keterangan: 'Mentor senior, aktif membina anak asuh area Bandung Timur',
@@ -2070,7 +1888,6 @@ const firebaseConfig = {
                 keaktifan: 92
             },
             {
-                _docId: 'seed-mentor-2',
                 id: 'MTR-2026-002', nama: 'Ustzh. Fitriani Rahma', jenisKelamin: 'Perempuan',
                 alamat: 'Jl. Asia Afrika No. 8, Bandung', pekerjaan: 'Konselor Pendidikan',
                 cabang: 'Cabang Bandung', keterangan: 'Fokus pendampingan pembinaan orang tua',
@@ -2078,7 +1895,6 @@ const firebaseConfig = {
                 keaktifan: 87
             },
             {
-                _docId: 'seed-mentor-3',
                 id: 'MTR-2026-003', nama: 'Ust. Rizki Maulana', jenisKelamin: 'Laki-laki',
                 alamat: 'Jl. Diponegoro No. 20, Jakarta Pusat', pekerjaan: 'Guru Ngaji',
                 cabang: 'Cabang Jakarta', keterangan: 'Rutin mengisi rekap absensi dan setoran hafalan',
@@ -2086,7 +1902,6 @@ const firebaseConfig = {
                 keaktifan: 78
             },
             {
-                _docId: 'seed-mentor-4',
                 id: 'MTR-2026-004', nama: 'Ustzh. Nadia Salsabila', jenisKelamin: 'Perempuan',
                 alamat: 'Jl. Pemuda No. 15, Surabaya', pekerjaan: 'Guru Tahfidz',
                 cabang: 'Cabang Surabaya', keterangan: 'Baru bergabung, pengisian data masih perlu ditingkatkan',
@@ -2169,7 +1984,7 @@ const firebaseConfig = {
         }
 
         // Simpan data mentor baru dari Form Input
-        async function tambahMentor() {
+        function tambahMentor() {
             const nama = document.getElementById('in-mentor-nama').value;
             if (!nama) { alert('Nama mentor wajib diisi.'); return; }
 
@@ -2187,14 +2002,7 @@ const firebaseConfig = {
                 foto: foto,
                 keaktifan: 75 // nilai awal (baseline) mentor baru sebelum ada aktivitas pengisian data
             };
-
-            try {
-                await saveMentorToDB(newMentor);
-                alert('Data mentor baru berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
-            } catch (err) {
-                console.error('[Firebase] Gagal menyimpan data mentor:', err);
-                alert('Gagal menyimpan data mentor ke database. Periksa koneksi Firebase Anda.');
-            }
+            databaseMentor.push(newMentor);
             generateMentorTable();
 
             // Reset form
@@ -2205,21 +2013,12 @@ const firebaseConfig = {
             document.getElementById('in-mentor-keterangan').value = '';
             document.getElementById('in-mentor-foto').value = '';
             document.getElementById('preview-foto-mentor').innerHTML = '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
+
+            alert('Data mentor baru berhasil disimpan!');
         }
         let mentorDataInitialized = false;
 
-        // Menutup sidebar secara otomatis di layar HP setiap kali menu dipilih
-        function closeSidebarOnMobile() {
-            if (window.innerWidth < 1024) {
-                const sidebar = document.getElementById('sidebar');
-                const backdrop = document.getElementById('sidebar-backdrop');
-                if (sidebar) { sidebar.classList.add('hidden'); sidebar.classList.remove('flex'); }
-                if (backdrop) backdrop.classList.add('hidden');
-            }
-        }
-
         function switchView(viewId) {
-            closeSidebarOnMobile();
             currentView = viewId;
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-daftar-siswa').classList.add('hidden');
@@ -2310,57 +2109,6 @@ const firebaseConfig = {
         }
 
         // Merekap seluruh isian dari sub-tab Input (Nama, Kehadiran, Setoran Hafalan)
-        // Menyimpan seluruh isian di sub-tab Input (Pembinaan, Absensi, Setoran Hafalan) sebagai satu sesi riwayat ke database
-        async function simpanPerkembanganAnak() {
-            const rekap = getVisibleSiswa().map((siswa) => {
-                const index = databaseSiswa.indexOf(siswa);
-                let kehadiran = '-';
-                document.getElementsByName(`absen-${index}`).forEach(r => { if (r.checked) kehadiran = r.value; });
-                return {
-                    nama: siswa.nama,
-                    kehadiran,
-                    setoranSurat: document.getElementById(`hafalan-setoran-surat-${index}`)?.value || '',
-                    setoranAyat: document.getElementById(`hafalan-setoran-ayat-${index}`)?.value || '',
-                    sampaiSurat: document.getElementById(`hafalan-sampai-surat-${index}`)?.value || '',
-                    sampaiAyat: document.getElementById(`hafalan-sampai-ayat-${index}`)?.value || ''
-                };
-            });
-
-            const sesi = {
-                cabang: document.getElementById('pa-cabang')?.value || '-',
-                tanggal: document.getElementById('pa-tanggal')?.value || '-',
-                lokasi: document.getElementById('pa-lokasi')?.value || '-',
-                materi: document.getElementById('pa-materi')?.value || '-',
-                pemateri: document.getElementById('pa-pemateri')?.value || '-',
-                rekap
-            };
-
-            const ok = await saveSesiPembinaan('pembinaan_anak', sesi);
-            if (ok) alert('Semua rekapan perkembangan anak asuh telah disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ' (Mode lokal — hubungkan Firebase agar tersimpan permanen)'));
-        }
-
-        // Menyimpan seluruh isian di sub-tab Input Orang Tua (Pembinaan, Absensi) sebagai satu sesi riwayat ke database
-        async function simpanPerkembanganOrtu() {
-            const rekap = getVisibleSiswa().map((siswa) => {
-                const index = databaseSiswa.indexOf(siswa);
-                let kehadiran = '-';
-                document.getElementsByName(`ortu-absen-${index}`).forEach(r => { if (r.checked) kehadiran = r.value; });
-                return { nama: `Orang Tua ${siswa.nama}`, kehadiran };
-            });
-
-            const sesi = {
-                cabang: document.getElementById('po-cabang')?.value || '-',
-                tanggal: document.getElementById('po-tanggal')?.value || '-',
-                lokasi: document.getElementById('po-lokasi')?.value || '-',
-                materi: document.getElementById('po-materi')?.value || '-',
-                pemateri: document.getElementById('po-pemateri')?.value || '-',
-                rekap
-            };
-
-            const ok = await saveSesiPembinaan('pembinaan_ortu', sesi);
-            if (ok) alert('Semua rekapan perkembangan orang tua berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ' (Mode lokal — hubungkan Firebase agar tersimpan permanen)'));
-        }
-
         function generateRekapAnak() {
             const body = document.getElementById('table-rekap-anak-body');
             if (!body) return;
@@ -2670,6 +2418,7 @@ const firebaseConfig = {
             }
 
             visible.forEach((s) => {
+                const idx = databaseSiswa.indexOf(s);
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition";
                 tr.innerHTML = `
@@ -2681,7 +2430,7 @@ const firebaseConfig = {
                     <td class="p-4 text-center">
                         <div class="flex justify-center gap-3">
                             <button onclick="viewStudentDetail('${s.hasDetail ? 'aisyah' : 'generic'}')" class="text-blue-600 hover:underline font-bold text-xs">Detail</button>
-                            <button onclick="editSiswa('${s._docId}')" class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button>
+                            <button onclick="editSiswa(${idx})" class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button>
                         </div>
                     </td>
                 `;
@@ -2734,7 +2483,7 @@ const firebaseConfig = {
             });
         }
 
-        window.onload = function() { initFirebase(); applyAccessControl(); switchView('dashboard'); };
+        window.onload = function() { applyAccessControl(); switchView('dashboard'); };
 
         // Populate drop-down list Surat pada menu input asessment (Step 4)
         function initAssessSuratOptions() {
@@ -2808,7 +2557,7 @@ const firebaseConfig = {
 
         // Modal Wizard Logic
         function openModal() {
-            editingSiswaDocId = null;
+            editingSiswaIndex = null;
             document.getElementById('inputModal').classList.remove('hidden');
             document.getElementById('inputModal').classList.add('flex');
             document.getElementById('modal-form-title').innerText = 'Form Registrasi Anak Baru';
@@ -2825,11 +2574,11 @@ const firebaseConfig = {
             initAssessSuratOptions(); // Load list surat
         }
 
-        // Membuka modal dalam mode edit, mengisi ulang data siswa yang sudah tersimpan (berdasarkan docId Firestore)
-        function editSiswa(docId) {
-            const s = databaseSiswa.find(x => x._docId === docId);
+        // Membuka modal dalam mode edit, mengisi ulang data siswa yang sudah tersimpan
+        function editSiswa(index) {
+            editingSiswaIndex = index;
+            const s = databaseSiswa[index];
             if (!s) return;
-            editingSiswaDocId = docId;
 
             document.getElementById('inputModal').classList.remove('hidden');
             document.getElementById('inputModal').classList.add('flex');
@@ -2851,19 +2600,17 @@ const firebaseConfig = {
             if (document.getElementById('assess-status-edukasi')) {
                 document.getElementById('assess-status-edukasi').value = s.statusEdukasi || 'Belum';
             }
-            if (document.getElementById('assess-jenjang-hafalan')) {
-                document.getElementById('assess-jenjang-hafalan').value = s.jenjangHafalan || '';
-            }
         }
 
-        // Menghapus data siswa yang sedang diedit dari dalam modal (langsung ke Firestore jika terhubung)
-        async function hapusSiswaDariModal() {
-            if (!editingSiswaDocId) return;
-            const s = databaseSiswa.find(x => x._docId === editingSiswaDocId);
-            if (!s) return;
+        // Menghapus data siswa yang sedang diedit dari dalam modal
+        function hapusSiswaDariModal() {
+            if (editingSiswaIndex === null) return;
+            const s = databaseSiswa[editingSiswaIndex];
             if (!confirm(`Yakin ingin menghapus data "${s.nama}"? Tindakan ini tidak dapat dibatalkan.`)) return;
 
-            await deleteSiswaFromDB(editingSiswaDocId);
+            databaseSiswa.splice(editingSiswaIndex, 1);
+            renderSiswaTable();
+            renderProfilPenerimaList();
             alert('Data siswa berhasil dihapus dari sistem.');
             closeModal();
         }
@@ -2871,7 +2618,7 @@ const firebaseConfig = {
         function closeModal() {
             document.getElementById('inputModal').classList.add('hidden');
             document.getElementById('inputModal').classList.remove('flex');
-            editingSiswaDocId = null;
+            editingSiswaIndex = null;
         }
 
         function showStep(step) {
@@ -2885,12 +2632,12 @@ const firebaseConfig = {
             }
             
             document.getElementById('btnPrev').classList.toggle('invisible', step === 1);
-            document.getElementById('btnNext').innerText = step === 4 ? (editingSiswaDocId ? 'Simpan Perubahan' : 'Simpan Data') : 'Lanjut';
+            document.getElementById('btnNext').innerText = step === 4 ? (editingSiswaIndex !== null ? 'Simpan Perubahan' : 'Simpan Data') : 'Lanjut';
         }
 
-        async function changeStep(n) {
+        function changeStep(n) {
             if (n === 1 && currentStep === 4) {
-                // Simpan Data (Baru atau Hasil Edit) dari modal form ke database
+                // Simpan Data (Baru atau Hasil Edit) dari modal form ke virtual DB
                 const customId = document.getElementById('in-id-beasiswa').value;
                 const nama = document.getElementById('in-nama-siswa').value || 'Siswa Baru';
                 const mentor = document.getElementById('in-mentor').value || 'Budi Santoso';
@@ -2899,37 +2646,31 @@ const firebaseConfig = {
                 const kelas = document.getElementById('in-kelas').value || 'XI';
                 const statusEdukasi = document.getElementById('assess-status-edukasi').value || 'Belum';
                 const statusBeasiswa = document.getElementById('in-status-beasiswa').value || 'Aktif';
-                const jenjangHafalan = document.getElementById('assess-jenjang-hafalan')?.value || '';
                 const previewImgSiswa = document.querySelector('#preview-foto-siswa img');
                 const fotoSiswa = previewImgSiswa ? previewImgSiswa.src : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
 
-                const btnNext = document.getElementById('btnNext');
-                btnNext.disabled = true;
-                btnNext.innerText = 'Menyimpan...';
-
-                try {
-                    if (editingSiswaDocId) {
-                        // Mode Edit: perbarui data yang sudah ada
-                        await saveSiswaToDB({
-                            id: customId, nama, mentor, sekolah, wilayah, kelas,
-                            statusEdukasi, statusBeasiswa, jenjangHafalan, foto: fotoSiswa
-                        }, editingSiswaDocId);
-                        alert('Perubahan data siswa berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
-                    } else {
-                        // Mode Tambah Baru
-                        await saveSiswaToDB({
-                            id: customId, nama, mentor, sekolah, wilayah, kelas,
-                            gender: 'Perempuan', healthScore: 85,
-                            statusEdukasi, statusBeasiswa, jenjangHafalan, foto: fotoSiswa, hasDetail: false
-                        });
-                        alert('Data anak asuh baru beserta hasil assessment awal berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
-                    }
-                } catch (err) {
-                    console.error('[Firebase] Gagal menyimpan data siswa:', err);
-                    alert('Gagal menyimpan data ke database. Periksa koneksi Firebase Anda.');
-                } finally {
-                    btnNext.disabled = false;
+                if (editingSiswaIndex !== null) {
+                    // Mode Edit: perbarui data yang sudah ada
+                    const existing = databaseSiswa[editingSiswaIndex];
+                    databaseSiswa[editingSiswaIndex] = {
+                        ...existing,
+                        id: customId, nama, mentor, sekolah, wilayah, kelas,
+                        statusEdukasi, statusBeasiswa, foto: fotoSiswa
+                    };
+                    alert('Perubahan data siswa berhasil disimpan!');
+                } else {
+                    // Mode Tambah Baru
+                    const newStudent = {
+                        id: customId, nama, mentor, sekolah, wilayah, kelas,
+                        gender: 'Perempuan', healthScore: 85,
+                        statusEdukasi, statusBeasiswa, foto: fotoSiswa, hasDetail: false
+                    };
+                    databaseSiswa.push(newStudent);
+                    alert('Data anak asuh baru beserta hasil assessment awal berhasil disimpan ke sistem!');
                 }
+
+                renderSiswaTable();
+                renderProfilPenerimaList();
 
                 closeModal();
                 document.getElementById('siswaForm').reset();
