@@ -112,8 +112,8 @@
                     <i class="fa-solid fa-file-invoice text-lg w-5 text-center"></i>
                     <span>Laporan</span>
                 </button>
-                <button onclick="switchView('alumni')" id="btn-alumni" class="w-full flex items-center space-x-3.5 pl-11 pr-4 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition text-xs font-medium text-left">
-                    <i class="fa-solid fa-user-graduate w-4 text-center"></i>
+                <button onclick="switchView('alumni')" id="btn-alumni" class="w-full flex items-center space-x-3.5 pl-11 pr-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
+                    <i class="fa-solid fa-user-graduate text-lg w-5 text-center"></i>
                     <span>Alumni</span>
                 </button>
                            </div>
@@ -125,22 +125,22 @@
                 <i class="fa-solid fa-wand-magic-sparkles text-custom-orange animate-pulse"></i>
                 <h4 class="text-xs font-bold tracking-wider text-slate-300">AI INSIGHT SINGKAT</h4>
             </div>
-            <ul class="text-[11px] space-y-2.5 text-slate-400">
+            <ul class="text-[11px] space-y-2.5 text-slate-400" id="ai-insight-list">
                 <li class="flex items-start space-x-2">
                     <span class="text-emerald-400 font-bold">✦</span>
-                    <span><strong>54%</strong> penerima beasiswa adalah perempuan.</span>
+                    <span id="insight-gender">Belum ada data penerima beasiswa.</span>
                 </li>
                 <li class="flex items-start space-x-2">
                     <span class="text-emerald-400 font-bold">✦</span>
-                    <span><strong>72%</strong> siswa mengalami peningkatan hafalan.</span>
+                    <span id="insight-hafalan">Belum ada data capaian hafalan.</span>
                 </li>
                 <li class="flex items-start space-x-2">
                     <span class="text-emerald-400 font-bold">✦</span>
-                    <span><strong>41%</strong> lulusan SMA diterima di PTN.</span>
+                    <span id="insight-alumni">Belum ada data status kelulusan.</span>
                 </li>
                 <li class="flex items-start space-x-2">
                     <span class="text-amber-400 font-bold">✦</span>
-                    <span><strong>18 siswa</strong> memerlukan pendampingan intensif.</span>
+                    <span id="insight-perhatian">Belum ada data yang perlu ditindaklanjuti.</span>
                 </li>
             </ul>
         </div>
@@ -228,18 +228,18 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Penerima</p>
-                        <p class="text-2xl font-extrabold text-slate-800 mt-1">1.245</p>
+                        <p id="dash-total-penerima" class="text-2xl font-extrabold text-slate-800 mt-1">0</p>
                         <p class="text-[10px] text-slate-400 font-medium">Siswa Aktif & Alumni</p>
                     </div>
                     <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-center">
                         <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Aktif</p>
-                        <p class="text-2xl font-extrabold text-emerald-700 mt-1">1.098</p>
-                        <p class="text-[10px] text-emerald-500 font-medium">88.2% Penerima</p>
+                        <p id="dash-aktif-count" class="text-2xl font-extrabold text-emerald-700 mt-1">0</p>
+                        <p id="dash-aktif-percent" class="text-[10px] text-emerald-500 font-medium">0% Penerima</p>
                     </div>
                     <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-center">
                         <p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Lulus / Alumni</p>
-                        <p class="text-2xl font-extrabold text-blue-700 mt-1">137</p>
-                        <p class="text-[10px] text-blue-500 font-medium">11.0% dari Total</p>
+                        <p id="dash-lulus-count" class="text-2xl font-extrabold text-blue-700 mt-1">0</p>
+                        <p id="dash-lulus-percent" class="text-[10px] text-blue-500 font-medium">0% dari Total</p>
                     </div>
                 </div>
 
@@ -260,7 +260,7 @@
                             <div class="flex items-center justify-around mb-6 bg-slate-50 p-4 rounded-xl">
                                 <div class="text-center">
                                     <i class="fa-solid fa-user-tie text-3xl text-blue-500 mb-1"></i>
-                                    <p class="text-sm font-bold text-slate-800">54%</p>
+                                    <p id="dash-gender-lk" class="text-sm font-bold text-slate-800">0%</p>
                                     <span class="text-[10px] text-slate-400">Laki-laki</span>
                                 </div>
                                 <div class="w-16 h-16 flex items-center justify-center">
@@ -268,31 +268,12 @@
                                 </div>
                                 <div class="text-center">
                                     <i class="fa-solid fa-user-graduate text-3xl text-rose-400 mb-1"></i>
-                                    <p class="text-sm font-bold text-slate-800">46%</p>
+                                    <p id="dash-gender-pr" class="text-sm font-bold text-slate-800">0%</p>
                                     <span class="text-[10px] text-slate-400">Perempuan</span>
                                 </div>
                             </div>
-                            <div class="space-y-3 text-xs">
-                                <div>
-                                    <div class="flex justify-between font-bold text-slate-700 mb-1"><span>TK</span><span>87 Siswa</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-pink-400 h-full rounded-full" style="width: 7%"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between font-bold text-slate-700 mb-1"><span>SD / MI</span><span>267 Siswa</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-blue-500 h-full rounded-full" style="width: 21%"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between font-bold text-slate-700 mb-1"><span>SMP / MTs</span><span>310 Siswa</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-indigo-500 h-full rounded-full" style="width: 25%"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between font-bold text-slate-700 mb-1"><span>SMA / MA</span><span>380 Siswa</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-custom-orange h-full rounded-full" style="width: 31%"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between font-bold text-slate-700 mb-1"><span>Perguruan Tinggi</span><span>201 Mahasiswa</span></div>
-                                    <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-emerald-500 h-full rounded-full" style="width: 16%"></div></div>
-                                </div>
+                            <div class="space-y-3 text-xs" id="dash-jenjang-breakdown">
+                                <!-- Data terisi otomatis melalui javascript: renderDashboardSummary() -->
                             </div>
                         </div>
                     </div>
@@ -334,31 +315,27 @@
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-indigo-600 text-white rounded-lg"><i class="fa-solid fa-graduation-cap"></i></div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-800">Melanjutkan Kuliah</p>
-                                        <p class="text-[10px] text-slate-400">Target kelulusan alumni</p>
+                                        <p class="text-xs font-bold text-slate-800">Alumni Lulus</p>
+                                        <p class="text-[10px] text-slate-400">Status Beasiswa: Lulus</p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-black text-indigo-700">77,3%</span>
+                                <span id="dash-lulus-detail" class="text-sm font-black text-indigo-700">0 (0%)</span>
                             </div>
-                            <div class="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                            <div class="flex items-center justify-between p-3 bg-rose-50/50 rounded-xl border border-rose-100">
                                 <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-emerald-600 text-white rounded-lg"><i class="fa-solid fa-briefcase"></i></div>
+                                    <div class="p-2 bg-rose-600 text-white rounded-lg"><i class="fa-solid fa-circle-pause"></i></div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-800">Alumni Langsung Bekerja</p>
-                                        <p class="text-[10px] text-slate-400">Pemberdayaan pasca sekolah</p>
+                                        <p class="text-xs font-bold text-slate-800">Beasiswa Dihentikan</p>
+                                        <p class="text-[10px] text-slate-400">Status Beasiswa: Dihentikan</p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-black text-emerald-700">16,4%</span>
+                                <span id="dash-dihentikan-detail" class="text-sm font-black text-rose-700">0 (0%)</span>
                             </div>
                         </div>
                         <div class="pt-4 text-xs">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Pekerjaan Utama Orang Tua</span>
-                            <div class="grid grid-cols-5 gap-1.5 text-center">
-                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">33%</p><span class="text-[9px] text-slate-400">Buruh</span></div>
-                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">24%</p><span class="text-[9px] text-slate-400">Tani</span></div>
-                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">20%</p><span class="text-[9px] text-slate-400">Dagang</span></div>
-                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">9%</p><span class="text-[9px] text-slate-400">Nelayan</span></div>
-                                <div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">14%</p><span class="text-[9px] text-slate-400">Lainnya</span></div>
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-center" id="dash-pekerjaan-ortu-breakdown">
+                                <!-- Data terisi otomatis melalui javascript: renderDashboardSummary() -->
                             </div>
                         </div>
                     </div>
@@ -1568,7 +1545,6 @@
 
                     banner.className = "mb-4 rounded-xl border px-4 py-2.5 text-xs font-semibold flex items-center gap-2 print:hidden bg-emerald-50 border-emerald-200 text-emerald-700";
                     banner.innerHTML = `<i class="fa-solid fa-database"></i> Terhubung ke database real-time (Firebase Firestore${authReady ? ' + Authentication' : ''}). Foto disimpan langsung di Firestore (mode hemat kuota — tanpa Cloud Storage).`;
-                    seedFirestoreIfEmpty();
                     initFirestoreListeners();
                 } else {
                     console.warn('[Firebase] firebaseConfig belum diisi — aplikasi berjalan dalam MODE LOKAL. Data hanya tersimpan sementara di browser ini dan tidak tersinkron real-time. Isi firebaseConfig di bagian atas <script> untuk mengaktifkan database.');
@@ -1625,27 +1601,11 @@
         }
 
         // Mengisi Firestore dengan data contoh jika koleksi 'siswa' masih kosong (hanya sekali di awal)
-        async function seedFirestoreIfEmpty() {
-            if (!firebaseReady) return;
-            try {
-                const snap = await db.collection('siswa').limit(1).get();
-                if (snap.empty && databaseSiswa.length > 0) {
-                    const { _docId, ...seedData } = databaseSiswa[0];
-                    await db.collection('siswa').add(seedData);
-                }
-                const snapMentor = await db.collection('mentor').limit(1).get();
-                if (snapMentor.empty && databaseMentor.length > 0) {
-                    for (const m of databaseMentor) {
-                        const { _docId, ...seedData } = m;
-                        await db.collection('mentor').add(seedData);
-                    }
-                }
-            } catch (err) {
-                console.error('[Firebase] Gagal melakukan seeding data awal:', err);
-            }
-        }
-
         // Listener real-time: setiap perubahan di Firestore langsung tersinkron ke semua pengguna
+        // Riwayat sesi pembinaan (diisi dari Firestore realtime atau mode lokal)
+        let databasePembinaanAnak = [];
+        let databasePembinaanOrtu = [];
+
         function initFirestoreListeners() {
             if (!firebaseReady) return;
 
@@ -1655,13 +1615,23 @@
                 renderProfilPenerimaList();
                 if (currentView === 'perkembangan-anak') generatePerkembanganTables();
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
-                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); }
+                if (currentView === 'alumni') renderAlumniList();
+                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderDashboardSummary(); }
             }, err => console.error('[Firebase] Gagal memuat data siswa:', err));
 
             db.collection('mentor').onSnapshot(snapshot => {
                 databaseMentor = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
                 if (currentView === 'data-mentor') { generateMentorTable(); generateMentorRekap(); }
             }, err => console.error('[Firebase] Gagal memuat data mentor:', err));
+
+            db.collection('pembinaan_anak').onSnapshot(snapshot => {
+                databasePembinaanAnak = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
+                if (currentView === 'dashboard' && dashboardChartsInitialized) renderKehadiranChart();
+            }, err => console.error('[Firebase] Gagal memuat riwayat pembinaan anak:', err));
+
+            db.collection('pembinaan_ortu').onSnapshot(snapshot => {
+                databasePembinaanOrtu = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
+            }, err => console.error('[Firebase] Gagal memuat riwayat pembinaan orang tua:', err));
         }
 
         // Simpan (tambah/edit) data siswa — otomatis ke Firestore jika terhubung, atau ke array lokal jika belum
@@ -1682,6 +1652,7 @@
                 }
                 renderSiswaTable();
                 renderProfilPenerimaList();
+                if (currentView === 'alumni') renderAlumniList();
             }
         }
 
@@ -1708,6 +1679,7 @@
         }
 
         // Simpan sesi pembinaan (Perkembangan Anak / Orang Tua) sebagai riwayat permanen ke Firestore
+        // (atau ke array lokal, agar tetap dapat dipakai grafik Dashboard saat Firebase belum tersambung)
         async function saveSesiPembinaan(collectionName, sesiData) {
             if (firebaseReady) {
                 try {
@@ -1719,7 +1691,9 @@
                     return false;
                 }
             } else {
-                console.log(`[Mode Lokal] Sesi ${collectionName} dicatat sementara (tidak permanen):`, sesiData);
+                const record = { _docId: 'local-' + Date.now(), ...sesiData };
+                if (collectionName === 'pembinaan_anak') databasePembinaanAnak.push(record);
+                else if (collectionName === 'pembinaan_ortu') databasePembinaanOrtu.push(record);
                 return true;
             }
         }
@@ -1846,28 +1820,13 @@
                 renderKehadiranChart();
                 renderTopHafalan();
                 renderEdukasiRutinChart();
+                renderDashboardSummary();
                 dashboardChartsInitialized = true;
             }
         }
 
         // DB Siswa Virtual untuk Sinkronisasi Lintas Menu & Tabel
-        let databaseSiswa = [
-            {
-                _docId: 'seed-aisyah',
-                id: 'RZ-2026-001',
-                nama: 'Aisyah Putri Rahmawati',
-                mentor: 'Ust. Ahmad Fauzi',
-                sekolah: 'SMA Negeri 1 Bandung',
-                wilayah: 'Jakarta',
-                kelas: 'XI IPA 2',
-                gender: 'Perempuan',
-                healthScore: 89,
-                statusEdukasi: 'Sudah',
-                statusBeasiswa: 'Aktif',
-                foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
-                hasDetail: true
-            }
-        ];
+        let databaseSiswa = [];
 
         // Daftar 114 Surat beserta urutan dan estimasi panjang perhalaman untuk kalkulasi Juz yang realistis
         // Menggunakan perkiraan Juz Standar Ustmani Madinah
@@ -1988,30 +1947,9 @@
             { nama: "An-Nas", ayat: 6, hal: 0.3, juz: 30 }
         ];
 
-        // ===== DATA DUMMY: KEHADIRAN PEMBINAAN PER WILAYAH PEMBINAAN PER BULAN =====
-        const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
-        // Format tiap wilayah: array per bulan berisi [Hadir, Tidak Hadir]
-        const kehadiranPerKota = {
-            'Jakarta':  [[46, 4], [44, 6], [48, 2], [42, 8], [45, 5], [47, 3]],
-            'Bekasi':   [[38, 7], [40, 5], [36, 9], [39, 6], [41, 4], [37, 8]],
-            'Depok':    [[30, 5], [28, 7], [32, 3], [29, 6], [31, 4], [33, 2]],
-            'Bogor':    [[24, 6], [22, 8], [26, 4], [23, 7], [25, 5], [27, 3]]
-        };
+        // Daftar bulan untuk filter periode grafik Kehadiran Pembinaan
+        const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         let kehadiranChartInstance = null;
-
-        // ===== DATA DUMMY: TOP 10 HAFALAN TERBANYAK =====
-        const topHafalanData = [
-            { nama: 'Aisyah Putri Rahmawati', juz: 8.5, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Ahmad Zaki Fadillah', juz: 7.8, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Siti Aminah', juz: 7.2, wilayah: 'Depok', foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Muhammad Rizky', juz: 6.9, wilayah: 'Bogor', foto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Nur Fadilah', juz: 6.5, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Dedi Kurniawan', juz: 6.1, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Rina Marlina', juz: 5.8, wilayah: 'Depok', foto: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Fajar Ramadhan', juz: 5.4, wilayah: 'Bogor', foto: 'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Salsabila Putri', juz: 5.0, wilayah: 'Jakarta', foto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100' },
-            { nama: 'Yusuf Hidayat', juz: 4.7, wilayah: 'Bekasi', foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=100' }
-        ];
 
         // Isi dropdown periode bulan (Dari / Sampai) untuk grafik kehadiran
         function populateKehadiranBulanOptions() {
@@ -2028,7 +1966,8 @@
             sampaiSel.value = bulanList.length - 1;
         }
 
-        // Render / update grafik batang kehadiran pembinaan per kota sesuai periode terpilih
+        // Render / update grafik batang kehadiran pembinaan berdasarkan Cabang, memakai riwayat sesi
+        // yang benar-benar disimpan melalui menu Perkembangan Anak (Simpan Semua Perkembangan)
         function renderKehadiranChart() {
             const idxDari = parseInt(document.getElementById('kehadiran-bulan-dari').value);
             const idxSampai = parseInt(document.getElementById('kehadiran-bulan-sampai').value);
@@ -2040,23 +1979,41 @@
             if (isNaN(sampai)) sampai = bulanList.length - 1;
             if (dari > sampai) { const t = dari; dari = sampai; sampai = t; }
 
-            const labels = currentUser && currentUser.role === 'mentor-wilayah'
-                ? Object.keys(kehadiranPerKota).filter(k => k === currentUser.wilayah)
-                : Object.keys(kehadiranPerKota);
-            const dataHadir = [];
-            const dataTidakHadir = [];
-
-            labels.forEach(kota => {
-                let hadir = 0, tidak = 0;
-                for (let i = dari; i <= sampai; i++) {
-                    hadir += kehadiranPerKota[kota][i][0];
-                    tidak += kehadiranPerKota[kota][i][1];
-                }
-                dataHadir.push(hadir);
-                dataTidakHadir.push(tidak);
+            // Saring sesi sesuai rentang bulan yang dipilih, dan sesuai wilayah mentor yang login
+            const sesiTersaring = databasePembinaanAnak.filter(sesi => {
+                if (!sesi.tanggal) return false;
+                const bulanKe = new Date(sesi.tanggal).getMonth();
+                if (isNaN(bulanKe) || bulanKe < dari || bulanKe > sampai) return false;
+                return true;
             });
 
+            // Kelompokkan total Hadir / Tidak Hadir berdasarkan Cabang yang diisi pada Section 1 Pembinaan
+            const rekapPerCabang = {};
+            sesiTersaring.forEach(sesi => {
+                const cabang = sesi.cabang || 'Tanpa Cabang';
+                if (!rekapPerCabang[cabang]) rekapPerCabang[cabang] = { hadir: 0, tidak: 0 };
+                (sesi.rekap || []).forEach(r => {
+                    if (r.kehadiran === 'Hadir') rekapPerCabang[cabang].hadir++;
+                    else if (r.kehadiran === 'Tidak Hadir') rekapPerCabang[cabang].tidak++;
+                });
+            });
+
+            const labels = Object.keys(rekapPerCabang);
+            const dataHadir = labels.map(k => rekapPerCabang[k].hadir);
+            const dataTidakHadir = labels.map(k => rekapPerCabang[k].tidak);
+
             if (kehadiranChartInstance) kehadiranChartInstance.destroy();
+
+            if (labels.length === 0) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '12px sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText('Belum ada riwayat pembinaan tersimpan pada periode ini.', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
             kehadiranChartInstance = new Chart(canvas.getContext('2d'), {
                 type: 'bar',
                 data: {
@@ -2072,28 +2029,41 @@
                     plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
                     scales: {
                         x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+                        y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 } }
                     }
                 }
             });
         }
 
-        // Render daftar Top 10 Hafalan Terbanyak sebagai diagram batang horizontal dengan foto bulat di ujung
+        // Estimasi jumlah Juz hafalan seorang siswa berdasarkan rentang Surat pada Assessment (Step 4)
+        function estimasiJuzSiswa(s) {
+            if (s.suratDariIndex === undefined || s.suratDariIndex === null || s.suratDariIndex === '' ||
+                s.suratSampaiIndex === undefined || s.suratSampaiIndex === null || s.suratSampaiIndex === '') return 0;
+            const idxDari = parseInt(s.suratDariIndex);
+            const idxSampai = parseInt(s.suratSampaiIndex);
+            if (isNaN(idxDari) || isNaN(idxSampai) || idxDari > idxSampai) return 0;
+            let totalHalaman = 0;
+            for (let i = idxDari; i <= idxSampai; i++) totalHalaman += listSurat[i].hal;
+            return totalHalaman / 20;
+        }
+
+        // Render daftar Top 10 Hafalan Terbanyak berdasarkan hasil Assessment (Step 4) tiap siswa,
+        // sebagai diagram batang horizontal dengan foto bulat di ujung
         function renderTopHafalan() {
             const container = document.getElementById('top-hafalan-list');
             if (!container) return;
             container.innerHTML = '';
 
-            const sourceData = currentUser && currentUser.role === 'mentor-wilayah'
-                ? topHafalanData.filter(d => d.wilayah === currentUser.wilayah)
-                : topHafalanData;
+            const sourceData = getVisibleSiswa()
+                .map(s => ({ nama: s.nama, juz: estimasiJuzSiswa(s), foto: s.foto }))
+                .filter(d => d.juz > 0);
 
             if (sourceData.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Belum ada data hafalan untuk wilayah ini.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Belum ada data hafalan (isi rentang Surat pada Assessment Data Siswa).</p>`;
                 return;
             }
 
-            const sorted = [...sourceData].sort((a, b) => b.juz - a.juz).slice(0, 10);
+            const sorted = sourceData.sort((a, b) => b.juz - a.juz).slice(0, 10);
             const maxJuz = sorted[0].juz;
 
             sorted.forEach((item, idx) => {
@@ -2106,16 +2076,118 @@
                     <div class="flex-1 flex items-center gap-2">
                         <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-visible">
                             <div class="bg-gradient-to-r from-custom-orange to-amber-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
-                                <span class="text-[9px] font-bold text-white">${item.juz} Juz</span>
+                                <span class="text-[9px] font-bold text-white">${item.juz.toFixed(1)} Juz</span>
                             </div>
                         </div>
                         <div class="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-md shrink-0">
-                            <img src="${item.foto}" class="w-full h-full object-cover" alt="${item.nama}">
+                            <img src="${item.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100'}" class="w-full h-full object-cover" alt="${item.nama}">
                         </div>
                     </div>
                 `;
                 container.appendChild(row);
             });
+        }
+
+        // Render seluruh ringkasan angka Dashboard (Cards Agregat, Gender & Jenjang, Dampak Sosial)
+        // berdasarkan data siswa yang benar-benar tersimpan (bukan data dummy)
+        function renderDashboardSummary() {
+            const visible = getVisibleSiswa();
+            const total = visible.length;
+
+            const aktif = visible.filter(s => (s.statusBeasiswa || 'Aktif') === 'Aktif').length;
+            const lulus = visible.filter(s => s.statusBeasiswa === 'Lulus').length;
+            const dihentikan = visible.filter(s => s.statusBeasiswa === 'Dihentikan').length;
+            const pct = (n) => total > 0 ? ((n / total) * 100).toFixed(1) : '0';
+
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            setText('dash-total-penerima', total);
+            setText('dash-aktif-count', aktif);
+            setText('dash-aktif-percent', `${pct(aktif)}% Penerima`);
+            setText('dash-lulus-count', lulus);
+            setText('dash-lulus-percent', `${pct(lulus)}% dari Total`);
+            setText('dash-lulus-detail', `${lulus} (${pct(lulus)}%)`);
+            setText('dash-dihentikan-detail', `${dihentikan} (${pct(dihentikan)}%)`);
+
+            // Gender
+            const lk = visible.filter(s => s.gender === 'Laki-laki').length;
+            const pr = total - lk;
+            setText('dash-gender-lk', total > 0 ? `${pct(lk)}%` : '0%');
+            setText('dash-gender-pr', total > 0 ? `${pct(pr)}%` : '0%');
+
+            // Jenjang Pendidikan
+            const jenjangList = [
+                { label: 'TK', color: 'bg-pink-400' },
+                { label: 'SD / MI', color: 'bg-blue-500' },
+                { label: 'SMP / MTs', color: 'bg-indigo-500' },
+                { label: 'SMA / MA', color: 'bg-custom-orange' },
+                { label: 'Perguruan Tinggi', color: 'bg-emerald-500' }
+            ];
+            const jenjangWrap = document.getElementById('dash-jenjang-breakdown');
+            if (jenjangWrap) {
+                jenjangWrap.innerHTML = jenjangList.map(j => {
+                    const count = visible.filter(s => (s.jenjangPendidikan || '') === j.label).length;
+                    const persen = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                    return `
+                        <div>
+                            <div class="flex justify-between font-bold text-slate-700 mb-1"><span>${j.label}</span><span>${count} Siswa</span></div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full"><div class="${j.color} h-full rounded-full" style="width: ${persen}%"></div></div>
+                        </div>`;
+                }).join('');
+            }
+
+            // Pekerjaan Utama Orang Tua (dikelompokkan dari isian bebas pada Data Siswa)
+            const pekerjaanWrap = document.getElementById('dash-pekerjaan-ortu-breakdown');
+            if (pekerjaanWrap) {
+                const counts = {};
+                visible.forEach(s => {
+                    const p = (s.pekerjaanOrtu || '').trim();
+                    if (!p) return;
+                    const key = p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+                    counts[key] = (counts[key] || 0) + 1;
+                });
+                const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                if (entries.length === 0) {
+                    pekerjaanWrap.innerHTML = `<div class="col-span-full text-center text-slate-400 italic py-2">Belum ada data pekerjaan orang tua</div>`;
+                } else {
+                    const top5 = entries.slice(0, 5);
+                    const totalPekerjaan = entries.reduce((sum, e) => sum + e[1], 0);
+                    pekerjaanWrap.innerHTML = top5.map(([label, count]) => {
+                        const persen = totalPekerjaan > 0 ? ((count / totalPekerjaan) * 100).toFixed(0) : 0;
+                        return `<div class="bg-slate-50 p-2 rounded-lg"><p class="font-bold text-slate-700">${persen}%</p><span class="text-[9px] text-slate-400">${label}</span></div>`;
+                    }).join('');
+                }
+            }
+
+            // AI Insight Singkat (sidebar) — dihitung dari data nyata, bukan angka dummy
+            const insightGender = document.getElementById('insight-gender');
+            if (insightGender) {
+                insightGender.innerHTML = total > 0
+                    ? `<strong>${pct(pr)}%</strong> penerima beasiswa adalah perempuan.`
+                    : 'Belum ada data penerima beasiswa.';
+            }
+            const insightHafalan = document.getElementById('insight-hafalan');
+            if (insightHafalan) {
+                const juzList = visible.map(s => estimasiJuzSiswa(s)).filter(j => j > 0);
+                if (juzList.length > 0) {
+                    const avgJuz = (juzList.reduce((a, b) => a + b, 0) / juzList.length).toFixed(1);
+                    insightHafalan.innerHTML = `Rata-rata capaian hafalan: <strong>${avgJuz} Juz</strong> per siswa (${juzList.length} siswa tercatat).`;
+                } else {
+                    insightHafalan.innerText = 'Belum ada data capaian hafalan.';
+                }
+            }
+            const insightAlumni = document.getElementById('insight-alumni');
+            if (insightAlumni) {
+                insightAlumni.innerHTML = total > 0
+                    ? `<strong>${pct(lulus)}%</strong> dari total penerima berstatus Lulus (Alumni).`
+                    : 'Belum ada data status kelulusan.';
+            }
+            const insightPerhatian = document.getElementById('insight-perhatian');
+            if (insightPerhatian) {
+                const perluPerhatian = visible.filter(s => (s.statusEdukasi || 'Belum') === 'Belum').length;
+                insightPerhatian.innerHTML = perluPerhatian > 0
+                    ? `<strong>${perluPerhatian} siswa</strong> belum mengisi Status Edukasi Rutin.`
+                    : 'Semua siswa sudah mengisi Status Edukasi Rutin.';
+            }
         }
 
         // ===== DIAGRAM EDUKASI RUTIN (Pie: Sudah / Belum) =====
@@ -2162,20 +2234,6 @@
         }
 
         // Export ringkasan Dashboard ke Excel (kartu agregat)
-        function exportDashboardToExcel() {
-            const summary = [
-                { Metrik: 'Total Penerima', Nilai: '1.245' },
-                { Metrik: 'Aktif', Nilai: '1.098 (88.2%)' },
-                { Metrik: 'Lulus / Alumni', Nilai: '137 (11.0%)' },
-                { Metrik: 'Edukasi Rutin - Sudah', Nilai: databaseSiswa.filter(s => s.statusEdukasi === 'Sudah').length },
-                { Metrik: 'Edukasi Rutin - Belum', Nilai: databaseSiswa.filter(s => s.statusEdukasi !== 'Sudah').length }
-            ];
-            const ws = XLSX.utils.json_to_sheet(summary);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Ringkasan Dashboard');
-            XLSX.writeFile(wb, 'Ringkasan_Dashboard.xlsx');
-        }
-
         // ===== PREVIEW UPLOAD FOTO (Form Registrasi Siswa & Form Mentor) =====
         function previewFotoSiswa(event) {
             const file = event.target.files[0];
@@ -2203,40 +2261,7 @@
         }
 
         // ===== DATA MENTOR (Input / Rekap) =====
-        let databaseMentor = [
-            {
-                _docId: 'seed-mentor-1',
-                id: 'MTR-2026-001', nama: 'Ust. Ahmad Fauzi', jenisKelamin: 'Laki-laki',
-                alamat: 'Jl. Cikutra No. 12, Cibeunying Kidul, Bandung', pekerjaan: 'Guru Tahfidz',
-                cabang: 'Cabang Bandung', keterangan: 'Mentor senior, aktif membina anak asuh area Bandung Timur',
-                foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
-                keaktifan: 92
-            },
-            {
-                _docId: 'seed-mentor-2',
-                id: 'MTR-2026-002', nama: 'Ustzh. Fitriani Rahma', jenisKelamin: 'Perempuan',
-                alamat: 'Jl. Asia Afrika No. 8, Bandung', pekerjaan: 'Konselor Pendidikan',
-                cabang: 'Cabang Bandung', keterangan: 'Fokus pendampingan pembinaan orang tua',
-                foto: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=200',
-                keaktifan: 87
-            },
-            {
-                _docId: 'seed-mentor-3',
-                id: 'MTR-2026-003', nama: 'Ust. Rizki Maulana', jenisKelamin: 'Laki-laki',
-                alamat: 'Jl. Diponegoro No. 20, Jakarta Pusat', pekerjaan: 'Guru Ngaji',
-                cabang: 'Cabang Jakarta', keterangan: 'Rutin mengisi rekap absensi dan setoran hafalan',
-                foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
-                keaktifan: 78
-            },
-            {
-                _docId: 'seed-mentor-4',
-                id: 'MTR-2026-004', nama: 'Ustzh. Nadia Salsabila', jenisKelamin: 'Perempuan',
-                alamat: 'Jl. Pemuda No. 15, Surabaya', pekerjaan: 'Guru Tahfidz',
-                cabang: 'Cabang Surabaya', keterangan: 'Baru bergabung, pengisian data masih perlu ditingkatkan',
-                foto: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=200',
-                keaktifan: 63
-            }
-        ];
+        let databaseMentor = [];
 
         // Render tabel Input Data Mentor
         function generateMentorTable() {
@@ -2399,13 +2424,12 @@
                 document.getElementById('view-dashboard').classList.remove('hidden');
                 parent.innerText = "Sistem Monitoring"; child.innerText = "Dashboard Utama";
                 document.getElementById('btn-dashboard')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
-                if (!dashboardChartsInitialized) {
-                    populateKehadiranBulanOptions();
-                    renderKehadiranChart();
-                    renderTopHafalan();
-                    renderEdukasiRutinChart();
-                    dashboardChartsInitialized = true;
-                }
+                populateKehadiranBulanOptions();
+                renderKehadiranChart();
+                renderTopHafalan();
+                renderEdukasiRutinChart();
+                renderDashboardSummary();
+                dashboardChartsInitialized = true;
             } else if (viewId === 'daftar-siswa') {
                 document.getElementById('view-daftar-siswa').classList.remove('hidden');
                 parent.innerText = "Data Siswa"; child.innerText = "Master List";
