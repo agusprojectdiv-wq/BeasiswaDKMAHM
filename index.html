@@ -6,6 +6,26 @@
     <title>Sistem Monitoring Beasiswa - Rumah Zakat</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Nuansa Hijau: warna 'custom-orange' didefinisikan ulang sebagai hijau (emerald) sehingga
+        // seluruh komponen yang sudah memakai kelas bg-custom-orange / text-custom-orange / ring-custom-orange dsb
+        // otomatis mengikuti tema hijau tanpa perlu mengganti setiap kelas satu per satu.
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'custom-orange': {
+                            50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+                            400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+                            800: '#065f46', 900: '#064e3b',
+                            DEFAULT: '#059669'
+                        },
+                        'custom-navy': '#0f2a1f'
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS (xlsx) CDN for Export Excel -->
@@ -22,10 +42,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f8fafc;
         }
-        .text-custom-orange { color: #ff6b00; }
-        .bg-custom-orange { background-color: #ff6b00; }
-        .border-custom-orange { border-color: #ff6b00; }
-        .bg-custom-navy { background-color: #0d1e3d; }
         .progress-ring__circle {
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
@@ -37,6 +53,28 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Toast Notification */
+        @keyframes toast-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(24px); } }
+        .toast-enter { animation: toast-in 0.25s ease-out forwards; }
+        .toast-leave { animation: toast-out 0.2s ease-in forwards; }
+
+        /* Card hover lift effect used across dashboard & list cards */
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -8px rgba(5, 150, 105, 0.18); }
+
+        /* Fade-in for view switching */
+        @keyframes view-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .view-fade-in { animation: view-fade-in 0.3s ease-out; }
+
+        /* Sidebar active menu indicator */
+        .menu-active { position: relative; }
+        .menu-active::before {
+            content: '';
+            position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+            width: 4px; height: 60%; background: #34d399; border-radius: 0 4px 4px 0;
+        }
 
         /* Format kertas A4 untuk semua hasil Cetak / Export PDF di seluruh halaman */
         @page {
@@ -57,6 +95,9 @@
     </style>
 </head>
 <body class="flex min-h-screen text-slate-800 overflow-x-hidden">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2.5 w-[calc(100%-2rem)] max-w-sm print:hidden"></div>
 
     <!-- MOBILE SIDEBAR BACKDROP -->
     <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-slate-900/50 z-40 lg:hidden"></div>
@@ -202,31 +243,36 @@
 
             <!-- 1. VIEW: DASHBOARD -->
             <div id="view-dashboard" class="space-y-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-800 tracking-tight uppercase flex items-center gap-2">
-                            <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-chart-line text-sm"></i></span>
-                            Dashboard Monitoring Beasiswa Rumah Zakat
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-semibold text-slate-500">Tahun Ajaran:</span>
-                        <select class="bg-white border border-slate-200 text-xs font-bold text-slate-700 py-1.5 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-orange/30">
-                            <option>2023/2024</option>
-                            <option>2024/2025</option>
-                            <option>2025/2026</option>
-                        </select>
-                        <button onclick="window.print()" class="flex items-center gap-2 text-xs font-bold px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg shadow-sm transition print:hidden">
-                            <i class="fa-solid fa-print"></i>
-                            <span>Cetak PDF</span>
-                        </button>
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white p-6 md:p-8 shadow-lg">
+                    <div class="absolute -right-10 -top-10 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute -left-6 -bottom-14 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+                        <div>
+                            <p id="dash-greeting" class="text-xs font-semibold text-emerald-100 uppercase tracking-wider mb-1">Selamat Datang</p>
+                            <h2 class="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                                Dashboard Monitoring Beasiswa Rumah Zakat
+                            </h2>
+                            <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa, tersinkron real-time.</p>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0 flex-wrap">
+                            <span class="text-xs font-semibold text-emerald-100">Tahun Ajaran:</span>
+                            <select class="bg-white/90 border-0 text-xs font-bold text-slate-700 py-1.5 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50">
+                                <option>2023/2024</option>
+                                <option>2024/2025</option>
+                                <option>2025/2026</option>
+                            </select>
+                            <button onclick="window.print()" class="flex items-center gap-2 text-xs font-bold px-3 py-2 bg-white/15 hover:bg-white/25 backdrop-blur text-white rounded-lg shadow-sm transition print:hidden border border-white/20">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Cetak PDF</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Cards Agregat -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center card-hover">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Penerima</p>
                         <p id="dash-total-penerima" class="text-2xl font-extrabold text-slate-800 mt-1">0</p>
                         <p class="text-[10px] text-slate-400 font-medium">Siswa Aktif & Alumni</p>
@@ -246,7 +292,7 @@
                 <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Top 10 Hafalan Terbanyak -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Top 10 Hafalan Terbanyak</h3>
                         <div id="top-hafalan-list" class="space-y-3.5">
                             <!-- Data terisi otomatis melalui javascript -->
@@ -254,7 +300,7 @@
                     </div>
 
                     <!-- Berdasarkan Gender -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col justify-between">
                         <div>
                             <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Penerima Berdasarkan Gender & Jenjang</h3>
                             <div class="flex items-center justify-around mb-6 bg-slate-50 p-4 rounded-xl">
@@ -282,7 +328,7 @@
                 <!-- Row 2: Kehadiran Pembinaan (kiri) & Edukasi Rutin (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Kehadiran Pembinaan Berdasarkan Kota -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                             <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
                             <div class="flex items-center gap-2 text-xs">
@@ -290,7 +336,7 @@
                                 <select id="kehadiran-bulan-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
                                 <span class="text-slate-400">s/d</span>
                                 <select id="kehadiran-bulan-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
-                                <button onclick="renderKehadiranChart()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition shrink-0">
+                                <button onclick="renderKehadiranChart()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition shrink-0">
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </button>
                             </div>
@@ -299,7 +345,7 @@
                     </div>
 
                     <!-- Edukasi Rutin -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Edukasi Rutin</h3>
                         <div class="relative flex-1 flex items-center justify-center h-72"><canvas id="edukasiRutinChart"></canvas></div>
                     </div>
@@ -308,7 +354,7 @@
                 <!-- Row 3: Dampak Sosial & Outcome Alumni -->
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Dampak Sosial -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Dampak Sosial & Outcome Alumni</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
@@ -352,17 +398,27 @@
                         </h2>
                         <p class="text-xs text-slate-400">Kelola informasi umum pendaftaran dan wilayah pembinaan seluruh anak asuh</p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="downloadTemplateSiswa()" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Download Template</span>
+                        </button>
+                        <label class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition cursor-pointer">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            <span>Upload Excel</span>
+                            <input type="file" accept=".xlsx,.xls" onchange="importSiswaFromExcel(event)" class="hidden">
+                        </label>
                         <button onclick="exportTableToExcel('table-siswa', 'Data_Siswa')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
                             <i class="fa-solid fa-file-excel"></i>
                             <span>Export Excel</span>
                         </button>
-                        <button onclick="openModal()" class="bg-custom-orange hover:bg-orange-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+                        <button onclick="openModal()" class="bg-custom-orange hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
                             <i class="fa-solid fa-user-plus"></i>
                             <span>+ Input Anak Baru</span>
                         </button>
                     </div>
                 </div>
+                <p id="import-siswa-status" class="text-xs font-semibold hidden"></p>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-siswa">
                     <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -831,7 +887,7 @@
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="simpanPerkembanganAnak()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                    <button onclick="simpanPerkembanganAnak()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan Semua Perkembangan</span>
                     </button>
@@ -847,7 +903,7 @@
                         <input type="date" id="pa-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
                         <span class="text-slate-400">s/d</span>
                         <input type="date" id="pa-rekap-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
-                        <button onclick="generateRekapAnak()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
+                        <button onclick="generateRekapAnak()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Cari
                         </button>
                     </div>
@@ -996,7 +1052,7 @@
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button onclick="simpanPerkembanganOrtu()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                    <button onclick="simpanPerkembanganOrtu()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan Perkembangan Orang Tua</span>
                     </button>
@@ -1012,7 +1068,7 @@
                         <input type="date" id="po-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
                         <span class="text-slate-400">s/d</span>
                         <input type="date" id="po-rekap-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
-                        <button onclick="generateRekapOrtu()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
+                        <button onclick="generateRekapOrtu()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Cari
                         </button>
                     </div>
@@ -1074,11 +1130,23 @@
                         </h2>
                         <p class="text-xs text-slate-400">Kelola data mentor / pembina serta pantau tingkat keaktifan pengisian data anak binaan</p>
                     </div>
-                    <button onclick="switchMentorTab('rekap'); exportTableToExcel('mentor-tab-input-table-wrap', 'Data_Mentor')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Export Excel</span>
-                    </button>
+                    <div class="flex items-center gap-2 flex-wrap shrink-0">
+                        <button onclick="downloadTemplateMentor()" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Download Template</span>
+                        </button>
+                        <label class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition cursor-pointer">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            <span>Upload Excel</span>
+                            <input type="file" accept=".xlsx,.xls" onchange="importMentorFromExcel(event)" class="hidden">
+                        </label>
+                        <button onclick="switchMentorTab('rekap'); exportTableToExcel('mentor-tab-input-table-wrap', 'Data_Mentor')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export Excel</span>
+                        </button>
+                    </div>
                 </div>
+                <p id="import-mentor-status" class="text-xs font-semibold hidden"></p>
 
                 <!-- SUB TAB NAV: INPUT / REKAP -->
                 <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl w-max">
@@ -1101,7 +1169,7 @@
                                     <div id="preview-foto-mentor" class="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
                                         <i class="fa-solid fa-user text-slate-300 text-2xl"></i>
                                     </div>
-                                    <input type="file" accept="image/*" id="in-mentor-foto" onchange="previewFotoMentor(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-orange-600">
+                                    <input type="file" accept="image/*" id="in-mentor-foto" onchange="previewFotoMentor(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-emerald-700">
                                 </div>
                             </div>
                             <div>
@@ -1133,7 +1201,7 @@
                             </div>
                         </div>
                         <div class="flex justify-end pt-4">
-                            <button id="btn-tambah-mentor" onclick="tambahMentor()" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
+                            <button id="btn-tambah-mentor" onclick="tambahMentor()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span>Simpan Data Mentor</span>
                             </button>
@@ -1201,7 +1269,7 @@
                     <input type="password" id="login-password" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none" placeholder="Masukkan password">
                 </div>
                 <p id="login-error" class="text-rose-600 text-[11px] font-semibold hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>Username atau password salah.</p>
-                <button id="login-submit-btn" onclick="loginUser()" class="w-full bg-custom-orange hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl shadow-md transition mt-1">Masuk</button>
+                <button id="login-submit-btn" onclick="loginUser()" class="w-full bg-custom-orange hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-md transition mt-1">Masuk</button>
             </div>
         </div>
     </div>
@@ -1232,7 +1300,7 @@
                             <div id="preview-foto-siswa" class="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
                                 <i class="fa-solid fa-user text-slate-300 text-2xl"></i>
                             </div>
-                            <input type="file" accept="image/*" id="in-foto-siswa" onchange="previewFotoSiswa(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-orange-600">
+                            <input type="file" accept="image/*" id="in-foto-siswa" onchange="previewFotoSiswa(event)" class="w-full text-xs border border-slate-200 rounded-xl p-2 focus:outline-none focus:border-custom-orange file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-custom-orange file:text-white hover:file:bg-emerald-700">
                         </div>
                     </div>
                     <div>
@@ -1326,8 +1394,8 @@
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">Jenis Kelamin</label>
                             <div class="flex gap-6 mt-3 font-medium text-slate-700">
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="jk" value="Laki-laki" class="w-4 h-4 accent-orange-600"> Laki-laki</label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="jk" value="Perempuan" class="w-4 h-4 accent-orange-600" checked> Perempuan</label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="jk" value="Laki-laki" class="w-4 h-4 accent-emerald-600"> Laki-laki</label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="jk" value="Perempuan" class="w-4 h-4 accent-emerald-600" checked> Perempuan</label>
                             </div>
                         </div>
                     </div>
@@ -1474,13 +1542,44 @@
                         <i class="fa-solid fa-trash-can mr-1"></i>Hapus Data
                     </button>
                 </div>
-                <button type="button" id="btnNext" onclick="changeStep(1)" class="px-5 py-2 bg-custom-orange hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md transition">Lanjut</button>
+                <button type="button" id="btnNext" onclick="changeStep(1)" class="px-5 py-2 bg-custom-orange hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition">Lanjut</button>
             </div>
         </div>
     </div>
 
     <!-- SCRIPT LOGIC -->
     <script>
+        // ===== TOAST NOTIFICATION (pengganti alert() bawaan browser agar tampilan lebih modern) =====
+        function showToast(message, type = 'success', duration = 3500) {
+            const container = document.getElementById('toast-container');
+            if (!container) { alert(message); return; }
+
+            const styles = {
+                success: { icon: 'fa-circle-check', bg: 'bg-emerald-600', border: 'border-emerald-700' },
+                error: { icon: 'fa-circle-exclamation', bg: 'bg-rose-600', border: 'border-rose-700' },
+                warning: { icon: 'fa-triangle-exclamation', bg: 'bg-amber-500', border: 'border-amber-600' },
+                info: { icon: 'fa-circle-info', bg: 'bg-slate-700', border: 'border-slate-800' }
+            };
+            const s = styles[type] || styles.info;
+
+            const toast = document.createElement('div');
+            toast.className = `toast-enter ${s.bg} text-white rounded-xl shadow-lg border ${s.border} px-4 py-3 flex items-start gap-3 text-xs font-semibold`;
+            toast.innerHTML = `
+                <i class="fa-solid ${s.icon} text-base mt-0.5"></i>
+                <span class="flex-1 leading-snug">${message}</span>
+                <button class="text-white/70 hover:text-white leading-none text-sm" onclick="this.parentElement.remove()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-leave');
+                setTimeout(() => toast.remove(), 220);
+            }, duration);
+        }
+
         let currentView = 'dashboard';
         let chartsInitialized = false;
         let dashboardChartsInitialized = false;
@@ -1687,7 +1786,7 @@
                     return true;
                 } catch (err) {
                     console.error(`[Firebase] Gagal menyimpan ke ${collectionName}:`, err);
-                    alert('Gagal menyimpan ke database. Periksa koneksi Firebase Anda.');
+                    showToast('Gagal menyimpan ke database. Periksa koneksi Firebase Anda.', 'error');
                     return false;
                 }
             } else {
@@ -2075,7 +2174,7 @@
                     <span class="text-[11px] font-semibold text-slate-600 w-24 truncate" title="${item.nama}">${item.nama}</span>
                     <div class="flex-1 flex items-center gap-2">
                         <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-visible">
-                            <div class="bg-gradient-to-r from-custom-orange to-amber-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
+                            <div class="bg-gradient-to-r from-custom-orange to-emerald-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
                                 <span class="text-[9px] font-bold text-white">${item.juz.toFixed(1)} Juz</span>
                             </div>
                         </div>
@@ -2226,14 +2325,190 @@
             const container = document.getElementById(containerId);
             const table = container ? container.querySelector('table') : null;
             if (!table) {
-                alert('Tidak ada tabel yang dapat diekspor pada bagian ini.');
+                showToast('Tidak ada tabel yang dapat diekspor pada bagian ini.', 'warning');
                 return;
             }
             const wb = XLSX.utils.table_to_book(table, { sheet: 'Data' });
             XLSX.writeFile(wb, `${filename}.xlsx`);
         }
 
-        // Export ringkasan Dashboard ke Excel (kartu agregat)
+        // ===== TEMPLATE & IMPORT EXCEL: DATA SISWA =====
+        // Pemetaan kolom Excel (Bahasa Indonesia, mudah dipahami pengisi) ke field internal aplikasi
+        const TEMPLATE_KOLOM_SISWA = [
+            ['ID Beasiswa', 'id'],
+            ['NIK / No KK', 'nik'],
+            ['Nama Lengkap Siswa', 'nama'],
+            ['Nama Mentor Pendamping', 'mentor'],
+            ['Jenjang Pendidikan (TK/SD - MI/SMP - MTs/SMA - MA/Perguruan Tinggi)', 'jenjangPendidikan'],
+            ['Kelas', 'kelas'],
+            ['Wilayah Pembinaan (Bogor/Bekasi/Depok/Jakarta)', 'wilayah'],
+            ['Nama Sekolah / Kampus', 'sekolah'],
+            ['Bulan Awal Beasiswa (Format: YYYY-MM-DD)', 'bulanAwalBeasiswa'],
+            ['Status Beasiswa (Aktif/Dihentikan/Lulus)', 'statusBeasiswa'],
+            ['Keterangan (isi jika Status Dihentikan/Lulus)', 'keteranganStatus'],
+            ['Tempat Lahir', 'tempatLahir'],
+            ['Tanggal Lahir (Format: YYYY-MM-DD)', 'tanggalLahir'],
+            ['Jenis Kelamin (Laki-laki/Perempuan)', 'gender'],
+            ['Alamat Lengkap Rumah', 'alamatRumah'],
+            ['No HP / WhatsApp', 'noHp'],
+            ['Email', 'email'],
+            ['Nama Ayah / Ibu / Wali', 'namaWali'],
+            ['Pendidikan Terakhir Orang Tua', 'pendidikanOrtu'],
+            ['Pekerjaan Orang Tua', 'pekerjaanOrtu'],
+            ['Penghasilan Bulanan Orang Tua (Angka saja)', 'penghasilanOrtu'],
+            ['Jumlah Tanggungan Anak', 'tanggunganAnak'],
+            ['Status Kepemilikan Rumah', 'statusRumah'],
+            ['Aktivitas Sosial/Organisasi Orang Tua', 'aktivitasSosialOrtu'],
+            ['Status Edukasi Rutin (Sudah/Belum)', 'statusEdukasi'],
+            ['Bacaan (Al-Quran/Iqro, dst)', 'bacaanQuran'],
+            ['Jenjang Hafalan (Grade A/Grade B/Grade C/Grade D)', 'jenjangHafalan'],
+            ['Target Hafalan', 'targetHafalan'],
+            ['Aktivitas Sosial/Organisasi Anak', 'aktivitasSosialAnak']
+        ];
+
+        function downloadTemplateSiswa() {
+            const headers = TEMPLATE_KOLOM_SISWA.map(k => k[0]);
+            const contoh = [
+                'RZ-2026-010', '3273010101100001', 'Contoh Nama Siswa', 'Ust. Contoh Mentor',
+                'SMA / MA', 'XI IPA 1', 'Jakarta', 'SMA Negeri 1 Contoh', '2026-01-01',
+                'Aktif', '', 'Jakarta', '2009-05-10', 'Perempuan', 'Jl. Contoh Alamat No. 1',
+                '081200000000', 'contoh@email.com', 'Nama Wali Contoh', 'SMA / Sederajat',
+                'Pedagang', '2500000', '3', 'Sewa / Kontrak', 'Pengurus RT/RW', 'Belum',
+                'Al-Quran', 'Grade B', '5 Juz dalam 1 tahun', 'OSIS'
+            ];
+            const ws = XLSX.utils.aoa_to_sheet([headers, contoh]);
+            ws['!cols'] = headers.map(() => ({ wch: 28 }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+            XLSX.writeFile(wb, 'Template_Data_Siswa.xlsx');
+        }
+
+        async function importSiswaFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById('import-siswa-status');
+            statusEl.className = 'text-xs font-semibold text-slate-500';
+            statusEl.innerText = 'Membaca file Excel...';
+            statusEl.classList.remove('hidden');
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                if (rows.length === 0) {
+                    statusEl.className = 'text-xs font-semibold text-amber-600';
+                    statusEl.innerText = 'File Excel kosong atau tidak sesuai format template.';
+                    event.target.value = '';
+                    return;
+                }
+
+                let berhasil = 0, gagal = 0;
+                for (const row of rows) {
+                    const dataObj = {};
+                    TEMPLATE_KOLOM_SISWA.forEach(([header, field]) => {
+                        dataObj[field] = (row[header] !== undefined ? String(row[header]).trim() : '');
+                    });
+                    if (!dataObj.nama) { gagal++; continue; }
+                    dataObj.gender = dataObj.gender || 'Perempuan';
+                    dataObj.statusBeasiswa = dataObj.statusBeasiswa || 'Aktif';
+                    dataObj.statusEdukasi = dataObj.statusEdukasi || 'Belum';
+                    dataObj.wilayah = dataObj.wilayah || 'Jakarta';
+                    dataObj.foto = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
+                    dataObj.healthScore = 85;
+                    try {
+                        await saveSiswaToDB(dataObj);
+                        berhasil++;
+                    } catch (err) {
+                        console.error('[Import Excel] Gagal menyimpan baris:', row, err);
+                        gagal++;
+                    }
+                }
+
+                statusEl.className = 'text-xs font-semibold text-emerald-600';
+                statusEl.innerText = `Berhasil mengimpor ${berhasil} data siswa.${gagal > 0 ? ` ${gagal} baris gagal/dilewati (nama kosong atau error).` : ''}`;
+            } catch (err) {
+                console.error('[Import Excel Siswa] Gagal membaca file:', err);
+                statusEl.className = 'text-xs font-semibold text-rose-600';
+                statusEl.innerText = 'Gagal membaca file. Pastikan format sesuai Template Data Siswa.';
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+        // ===== TEMPLATE & IMPORT EXCEL: DATA MENTOR =====
+        const TEMPLATE_KOLOM_MENTOR = [
+            ['Nama Lengkap Mentor', 'nama'],
+            ['Jenis Kelamin (Laki-laki/Perempuan)', 'jenisKelamin'],
+            ['Alamat', 'alamat'],
+            ['Pekerjaan', 'pekerjaan'],
+            ['Cabang', 'cabang'],
+            ['Keterangan', 'keterangan']
+        ];
+
+        function downloadTemplateMentor() {
+            const headers = TEMPLATE_KOLOM_MENTOR.map(k => k[0]);
+            const contoh = ['Contoh Nama Mentor', 'Laki-laki', 'Jl. Contoh Alamat No. 5', 'Guru Tahfidz', 'Cabang Jakarta', 'Catatan tambahan (opsional)'];
+            const ws = XLSX.utils.aoa_to_sheet([headers, contoh]);
+            ws['!cols'] = headers.map(() => ({ wch: 28 }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data Mentor');
+            XLSX.writeFile(wb, 'Template_Data_Mentor.xlsx');
+        }
+
+        async function importMentorFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById('import-mentor-status');
+            statusEl.className = 'text-xs font-semibold text-slate-500';
+            statusEl.innerText = 'Membaca file Excel...';
+            statusEl.classList.remove('hidden');
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                if (rows.length === 0) {
+                    statusEl.className = 'text-xs font-semibold text-amber-600';
+                    statusEl.innerText = 'File Excel kosong atau tidak sesuai format template.';
+                    event.target.value = '';
+                    return;
+                }
+
+                let berhasil = 0, gagal = 0;
+                for (const row of rows) {
+                    const dataObj = {};
+                    TEMPLATE_KOLOM_MENTOR.forEach(([header, field]) => {
+                        dataObj[field] = (row[header] !== undefined ? String(row[header]).trim() : '');
+                    });
+                    if (!dataObj.nama) { gagal++; continue; }
+                    dataObj.id = `MTR-2026-${String(databaseMentor.length + berhasil + 1).padStart(3, '0')}`;
+                    dataObj.foto = 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200';
+                    dataObj.keaktifan = 75;
+                    try {
+                        await saveMentorToDB(dataObj);
+                        berhasil++;
+                    } catch (err) {
+                        console.error('[Import Excel] Gagal menyimpan baris mentor:', row, err);
+                        gagal++;
+                    }
+                }
+
+                generateMentorTable();
+                statusEl.className = 'text-xs font-semibold text-emerald-600';
+                statusEl.innerText = `Berhasil mengimpor ${berhasil} data mentor.${gagal > 0 ? ` ${gagal} baris gagal/dilewati.` : ''}`;
+            } catch (err) {
+                console.error('[Import Excel Mentor] Gagal membaca file:', err);
+                statusEl.className = 'text-xs font-semibold text-rose-600';
+                statusEl.innerText = 'Gagal membaca file. Pastikan format sesuai Template Data Mentor.';
+            } finally {
+                event.target.value = '';
+            }
+        }
+
         // ===== PREVIEW UPLOAD FOTO (Form Registrasi Siswa & Form Mentor) =====
         function previewFotoSiswa(event) {
             const file = event.target.files[0];
@@ -2339,7 +2614,7 @@
         // Simpan data mentor baru dari Form Input
         async function tambahMentor() {
             const nama = document.getElementById('in-mentor-nama').value;
-            if (!nama) { alert('Nama mentor wajib diisi.'); return; }
+            if (!nama) { showToast('Nama mentor wajib diisi.', 'warning'); return; }
 
             const btnTambah = document.getElementById('btn-tambah-mentor');
             if (btnTambah) { btnTambah.disabled = true; btnTambah.innerText = 'Menyimpan...'; }
@@ -2372,10 +2647,10 @@
 
             try {
                 await saveMentorToDB(newMentor);
-                alert('Data mentor baru berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
+                showToast('Data mentor baru berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ''), 'success');
             } catch (err) {
                 console.error('[Firebase] Gagal menyimpan data mentor:', err);
-                alert('Gagal menyimpan data mentor ke database. Periksa koneksi Firebase Anda.');
+                showToast('Gagal menyimpan data mentor ke database. Periksa koneksi Firebase Anda.', 'error');
             } finally {
                 if (btnTambah) { btnTambah.disabled = false; btnTambah.innerText = 'Simpan Data Mentor'; }
             }
@@ -2418,42 +2693,43 @@
             const child = document.getElementById('breadcrumb-child');
 
             const buttons = ['btn-dashboard', 'btn-daftar-siswa', 'btn-profil-penerima', 'btn-perkembangan-anak', 'btn-perkembangan-ortu', 'btn-data-mentor', 'btn-alumni'];
-            buttons.forEach(bId => document.getElementById(bId)?.classList.remove('bg-custom-orange', 'text-white', 'shadow-lg'));
+            buttons.forEach(bId => document.getElementById(bId)?.classList.remove('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active'));
 
             if (viewId === 'dashboard') {
                 document.getElementById('view-dashboard').classList.remove('hidden');
                 parent.innerText = "Sistem Monitoring"; child.innerText = "Dashboard Utama";
-                document.getElementById('btn-dashboard')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-dashboard')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
                 populateKehadiranBulanOptions();
                 renderKehadiranChart();
                 renderTopHafalan();
                 renderEdukasiRutinChart();
                 renderDashboardSummary();
+                setDashboardGreeting();
                 dashboardChartsInitialized = true;
             } else if (viewId === 'daftar-siswa') {
                 document.getElementById('view-daftar-siswa').classList.remove('hidden');
                 parent.innerText = "Data Siswa"; child.innerText = "Master List";
-                document.getElementById('btn-daftar-siswa')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-daftar-siswa')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
             } else if (viewId === 'profil-penerima') {
                 document.getElementById('view-profil-penerima').classList.remove('hidden');
                 parent.innerText = "Profil Penerima"; child.innerText = "Daftar Kesehatan";
-                document.getElementById('btn-profil-penerima')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-profil-penerima')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
             } else if (viewId === 'perkembangan-anak') {
                 document.getElementById('view-perkembangan-anak').classList.remove('hidden');
                 parent.innerText = "Perkembangan Anak"; child.innerText = "Input Evaluasi & Capaian";
-                document.getElementById('btn-perkembangan-anak')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-perkembangan-anak')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
                 generatePerkembanganTables();
                 switchPaTab(currentUser ? 'input' : 'rekap');
             } else if (viewId === 'perkembangan-ortu') {
                 document.getElementById('view-perkembangan-ortu').classList.remove('hidden');
                 parent.innerText = "Perkembangan Orang Tua"; child.innerText = "Evaluasi & Absensi Wali";
-                document.getElementById('btn-perkembangan-ortu')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-perkembangan-ortu')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
                 generatePerkembanganOrtuTables();
                 switchPoTab(currentUser ? 'input' : 'rekap');
             } else if (viewId === 'data-mentor') {
                 document.getElementById('view-data-mentor').classList.remove('hidden');
                 parent.innerText = "Data Mentor"; child.innerText = "Input & Rekap Mentor";
-                document.getElementById('btn-data-mentor')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-data-mentor')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
                 if (!mentorDataInitialized) {
                     generateMentorTable();
                     mentorDataInitialized = true;
@@ -2462,9 +2738,30 @@
             } else if (viewId === 'alumni') {
                 document.getElementById('view-alumni').classList.remove('hidden');
                 parent.innerText = "Laporan"; child.innerText = "Alumni";
-                document.getElementById('btn-alumni')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg');
+                document.getElementById('btn-alumni')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
                 renderAlumniList();
             }
+
+            // Animasi fade-in halus setiap kali berpindah menu
+            const activeViewEl = document.getElementById(`view-${viewId}`) || document.getElementById('view-dashboard');
+            if (activeViewEl) {
+                activeViewEl.classList.remove('view-fade-in');
+                void activeViewEl.offsetWidth; // restart animasi
+                activeViewEl.classList.add('view-fade-in');
+            }
+        }
+
+        // Menampilkan sapaan singkat pada hero banner Dashboard sesuai waktu saat ini
+        function setDashboardGreeting() {
+            const el = document.getElementById('dash-greeting');
+            if (!el) return;
+            const hour = new Date().getHours();
+            let sapaan = 'Selamat Malam';
+            if (hour >= 4 && hour < 11) sapaan = 'Selamat Pagi';
+            else if (hour >= 11 && hour < 15) sapaan = 'Selamat Siang';
+            else if (hour >= 15 && hour < 18) sapaan = 'Selamat Sore';
+            const nama = currentUser ? currentUser.label : 'Tim Rumah Zakat';
+            el.innerText = `${sapaan}, ${nama}`;
         }
 
         // ===== SUB TAB: PERKEMBANGAN ANAK (Input / Rekap) =====
@@ -2525,7 +2822,7 @@
             };
 
             const ok = await saveSesiPembinaan('pembinaan_anak', sesi);
-            if (ok) alert('Semua rekapan perkembangan anak asuh telah disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ' (Mode lokal — hubungkan Firebase agar tersimpan permanen)'));
+            if (ok) showToast('Semua rekapan perkembangan anak asuh telah disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ' Mode lokal — hubungkan Firebase agar tersimpan permanen.'), 'success');
         }
 
         // Menyimpan seluruh isian di sub-tab Input Orang Tua (Pembinaan, Absensi) sebagai satu sesi riwayat ke database
@@ -2547,7 +2844,7 @@
             };
 
             const ok = await saveSesiPembinaan('pembinaan_ortu', sesi);
-            if (ok) alert('Semua rekapan perkembangan orang tua berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ' (Mode lokal — hubungkan Firebase agar tersimpan permanen)'));
+            if (ok) showToast('Semua rekapan perkembangan orang tua berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ' Mode lokal — hubungkan Firebase agar tersimpan permanen.'), 'success');
         }
 
         function generateRekapAnak() {
@@ -2677,8 +2974,8 @@
                     <td class="p-4 font-bold text-slate-800">${siswa.nama}</td>
                     <td class="p-4">
                         <div class="flex items-center gap-4">
-                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Hadir" checked class="accent-orange-600 w-4 h-4"> Hadir</label>
-                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Tidak Hadir" class="accent-orange-600 w-4 h-4"> Tidak Hadir</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir</label>
                         </div>
                     </td>
                     <td class="p-4"><input type="text" placeholder="Keterangan..." class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange"></td>
@@ -2779,10 +3076,10 @@
                     <td class="p-4">
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600">
-                                <input type="radio" name="ortu-absen-${index}" value="Hadir" checked class="accent-orange-600 w-4 h-4"> Hadir
+                                <input type="radio" name="ortu-absen-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir
                             </label>
                             <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600">
-                                <input type="radio" name="ortu-absen-${index}" value="Tidak Hadir" class="accent-orange-600 w-4 h-4"> Tidak Hadir
+                                <input type="radio" name="ortu-absen-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir
                             </label>
                         </div>
                     </td>
@@ -2828,7 +3125,7 @@
         // kelengkapan data di menu Data Siswa / Perkembangan lainnya — selalu bisa dibuka.
         function viewStudentDetail(docId) {
             const s = databaseSiswa.find(x => x._docId === docId) || databaseSiswa[0];
-            if (!s) { alert('Data siswa tidak ditemukan.'); return; }
+            if (!s) { showToast('Data siswa tidak ditemukan.', 'error'); return; }
 
             currentView = 'student-detail';
             document.getElementById('view-profil-penerima').classList.add('hidden');
@@ -2959,7 +3256,7 @@
                         </div>
                     </td>
                     <td class="p-4 text-center">
-                        <button onclick="viewStudentDetail('${s._docId}')" class="bg-custom-orange hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 mx-auto">
+                        <button onclick="viewStudentDetail('${s._docId}')" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 mx-auto">
                             <span>Klik untuk Detail</span>
                             <i class="fa-solid fa-chevron-right text-[10px]"></i>
                         </button>
@@ -3174,7 +3471,7 @@
             if (!confirm(`Yakin ingin menghapus data "${s.nama}"? Tindakan ini tidak dapat dibatalkan.`)) return;
 
             await deleteSiswaFromDB(editingSiswaDocId);
-            alert('Data siswa berhasil dihapus dari sistem.');
+            showToast('Data siswa berhasil dihapus dari sistem.', 'success');
             closeModal();
         }
 
@@ -3284,14 +3581,14 @@
 
                     if (editingSiswaDocId) {
                         await saveSiswaToDB(dataObj, editingSiswaDocId);
-                        alert('Perubahan data siswa berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
+                        showToast('Perubahan data siswa berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ''), 'success');
                     } else {
                         await saveSiswaToDB(dataObj);
-                        alert('Data anak asuh baru beserta hasil assessment awal berhasil disimpan!' + (firebaseReady ? ' (Tersinkron ke database real-time)' : ''));
+                        showToast('Data anak asuh baru beserta hasil assessment awal berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ''), 'success');
                     }
                 } catch (err) {
                     console.error('[Firebase] Gagal menyimpan data siswa:', err);
-                    alert('Gagal menyimpan data ke database. Periksa koneksi Firebase Anda.');
+                    showToast('Gagal menyimpan data ke database. Periksa koneksi Firebase Anda.', 'error');
                 } finally {
                     btnNext.disabled = false;
                 }
