@@ -459,10 +459,16 @@
                         </h2>
                         <p class="text-xs text-slate-400">Pilih berkas siswa aktif di bawah untuk meninjau Indeks Kesehatan Belajar (Student Health Score)</p>
                     </div>
-                    <button onclick="exportTableToExcel('table-profil-penerima', 'Profil_Penerima')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Export Excel</span>
-                    </button>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                            <input type="text" id="profil-search-input" oninput="renderProfilPenerimaList(this.value)" placeholder="Cari nama, wilayah, sekolah..." class="pl-8 pr-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-custom-orange w-48 sm:w-56">
+                        </div>
+                        <button onclick="exportTableToExcel('table-profil-penerima', 'Profil_Penerima')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition shrink-0">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export Excel</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-profil-penerima">
@@ -848,6 +854,73 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="table-edukasi-body">
                                 <!-- Data terisi otomatis melalui javascript: hanya anak dengan statusEdukasi === 'Sudah' -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: PEMBINAAN AL-QURAN -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-pembinaan-quran')">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-cyan-600 text-white rounded-lg text-xs"><i class="fa-solid fa-book-quran"></i></div>
+                            <h3 class="text-sm font-bold text-slate-800">6. Pembinaan Al-Quran</h3>
+                        </div>
+                        <button class="text-xs font-bold text-custom-orange hover:underline focus:outline-none flex items-center gap-1.5">
+                            <span id="txt-sec-pembinaan-quran">Tampilkan</span>
+                            <i id="icon-sec-pembinaan-quran" class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div id="sec-pembinaan-quran" class="p-5 space-y-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-xs">
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Kotak Cabang</label>
+                                <input type="text" id="pa-quran-cabang" placeholder="Contoh: Cabang Bandung" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Tanggal</label>
+                                <input type="date" id="pa-quran-tanggal" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Lokasi</label>
+                                <input type="text" id="pa-quran-lokasi" placeholder="Lokasi Pembinaan" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Judul Materi</label>
+                                <input type="text" id="pa-quran-materi" placeholder="Judul Materi Pembinaan Al-Quran" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 mb-1">Pemateri</label>
+                                <input type="text" id="pa-quran-pemateri" placeholder="Nama Pemateri" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 7: ABSENSI PEMBINAAN AL-QURAN -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-absensi-quran')">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-teal-600 text-white rounded-lg text-xs"><i class="fa-solid fa-clipboard-check"></i></div>
+                            <h3 class="text-sm font-bold text-slate-800">7. Absensi Pembinaan Al-Quran</h3>
+                        </div>
+                        <button class="text-xs font-bold text-custom-orange hover:underline focus:outline-none flex items-center gap-1.5">
+                            <span id="txt-sec-absensi-quran">Tampilkan</span>
+                            <i id="icon-sec-absensi-quran" class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div id="sec-absensi-quran" class="overflow-x-auto hidden">
+                        <p class="px-4 pt-3 text-[11px] text-slate-400 italic">Hanya menampilkan anak asuh dengan isian "Bacaan Al-Quran: Al-Quran (Lancar)" pada Assessment Data Siswa.</p>
+                        <table class="w-full text-left border-collapse text-xs md:text-sm">
+                            <thead>
+                                <tr class="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold">
+                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/3">Nama Siswa</th>
+                                    <th class="p-4 uppercase tracking-wider text-[10px] w-1/4">Status Kehadiran</th>
+                                    <th class="p-4 uppercase tracking-wider text-[10px]">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="table-absensi-quran-body">
+                                <!-- Data terisi otomatis melalui javascript: hanya siswa dengan bacaanQuran === 'Al-Quran (Lancar)' -->
                             </tbody>
                         </table>
                     </div>
@@ -1680,7 +1753,7 @@
             db.collection('siswa').onSnapshot(snapshot => {
                 databaseSiswa = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
                 renderSiswaTable();
-                renderProfilPenerimaList();
+                renderProfilPenerimaList(document.getElementById('profil-search-input')?.value || '');
                 if (currentView === 'perkembangan-anak') generatePerkembanganTables();
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
                 if (currentView === 'alumni') renderAlumniList();
@@ -2777,9 +2850,20 @@
                 const index = databaseSiswa.indexOf(siswa);
                 let kehadiran = '-';
                 document.getElementsByName(`absen-${index}`).forEach(r => { if (r.checked) kehadiran = r.value; });
+
+                let kehadiranQuran = null;
+                let keteranganQuran = '';
+                if (siswa.bacaanQuran === 'Al-Quran (Lancar)') {
+                    kehadiranQuran = '-';
+                    document.getElementsByName(`absen-quran-${index}`).forEach(r => { if (r.checked) kehadiranQuran = r.value; });
+                    keteranganQuran = document.getElementById(`absen-quran-keterangan-${index}`)?.value || '';
+                }
+
                 return {
                     nama: siswa.nama,
                     kehadiran,
+                    kehadiranQuran,
+                    keteranganQuran,
                     setoranSurat: document.getElementById(`hafalan-setoran-surat-${index}`)?.value || '',
                     setoranAyat: document.getElementById(`hafalan-setoran-ayat-${index}`)?.value || '',
                     sampaiSurat: document.getElementById(`hafalan-sampai-surat-${index}`)?.value || '',
@@ -2797,6 +2881,11 @@
                 lokasi: document.getElementById('pa-lokasi')?.value || '-',
                 materi: document.getElementById('pa-materi')?.value || '-',
                 pemateri: document.getElementById('pa-pemateri')?.value || '-',
+                cabangQuran: document.getElementById('pa-quran-cabang')?.value || '-',
+                tanggalQuran: document.getElementById('pa-quran-tanggal')?.value || '-',
+                lokasiQuran: document.getElementById('pa-quran-lokasi')?.value || '-',
+                materiQuran: document.getElementById('pa-quran-materi')?.value || '-',
+                pemateriQuran: document.getElementById('pa-quran-pemateri')?.value || '-',
                 rekap
             };
 
@@ -2938,11 +3027,13 @@
             const hafalanBody = document.getElementById('table-hafalan-body');
             const prestasiBody = document.getElementById('table-prestasi-body');
             const edukasiBody = document.getElementById('table-edukasi-body');
+            const absensiQuranBody = document.getElementById('table-absensi-quran-body');
 
             absensiBody.innerHTML = '';
             hafalanBody.innerHTML = '';
             prestasiBody.innerHTML = '';
             edukasiBody.innerHTML = '';
+            absensiQuranBody.innerHTML = '';
 
             getVisibleSiswa().forEach((siswa) => {
                 const index = databaseSiswa.indexOf(siswa);
@@ -3025,10 +3116,30 @@
                     `;
                     edukasiBody.appendChild(trEdukasi);
                 }
+
+                // 5. Absensi Pembinaan Al-Quran -- HANYA siswa dengan Bacaan Al-Quran = "Al-Quran (Lancar)" pada Assessment
+                if (siswa.bacaanQuran === 'Al-Quran (Lancar)') {
+                    const trAbsenQuran = document.createElement('tr');
+                    trAbsenQuran.className = "hover:bg-slate-50/50 transition";
+                    trAbsenQuran.innerHTML = `
+                        <td class="p-4 font-bold text-slate-800">${siswa.nama}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-quran-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir</label>
+                                <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-quran-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir</label>
+                            </div>
+                        </td>
+                        <td class="p-4"><input type="text" id="absen-quran-keterangan-${index}" placeholder="Keterangan..." class="w-full border border-slate-200 rounded-xl p-2 text-xs focus:outline-none focus:border-custom-orange"></td>
+                    `;
+                    absensiQuranBody.appendChild(trAbsenQuran);
+                }
             });
 
             if (edukasiBody.children.length === 0) {
                 edukasiBody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 text-xs italic">Belum ada anak asuh dengan Status Edukasi Rutin "Sudah" pada Assessment.</td></tr>`;
+            }
+            if (absensiQuranBody.children.length === 0) {
+                absensiQuranBody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 text-xs italic">Belum ada anak asuh dengan Bacaan Al-Quran "Al-Quran (Lancar)" pada Assessment.</td></tr>`;
             }
         }
 
@@ -3291,21 +3402,10 @@
         }
 
         // Render ulang daftar Profil Penerima (mendukung filter wilayah pembinaan sesuai login)
-        function renderProfilPenerimaList() {
-            const body = document.getElementById('profile-siswa-list');
-            if (!body) return;
-            body.innerHTML = '';
-            const visible = getVisibleSiswa();
-
-            if (visible.length === 0) {
-                body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-xs italic">Belum ada data penerima untuk wilayah pembinaan ini.</td></tr>`;
-                return;
-            }
-
-            visible.forEach((s) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition";
-                tr.innerHTML = `
+        // Membuat baris HTML tabel untuk satu siswa (dipakai baik mode flat maupun mode berkelompok per wilayah)
+        function buatBarisProfilSiswa(s, groupAttr = '') {
+            return `
+                <tr class="hover:bg-slate-50/50 transition"${groupAttr}>
                     <td class="p-4 font-bold text-slate-800 flex items-center space-x-3">
                         <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
                             <img src="${s.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80'}" alt="${s.nama}" class="w-full h-full object-cover">
@@ -3315,8 +3415,8 @@
                             <span class="text-[10px] font-semibold text-slate-400">ID: ${s.id}</span>
                         </div>
                     </td>
-                    <td class="p-4 font-semibold text-slate-600">${s.wilayah}</td>
-                    <td class="p-4 font-medium text-slate-600">${s.kelas}</td>
+                    <td class="p-4 font-semibold text-slate-600">${s.wilayah || '-'}</td>
+                    <td class="p-4 font-medium text-slate-600">${s.kelas || '-'}</td>
                     <td class="p-4">
                         <div class="flex items-center space-x-2">
                             <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
@@ -3330,9 +3430,78 @@
                             <i class="fa-solid fa-chevron-right text-[10px]"></i>
                         </button>
                     </td>
-                `;
-                body.appendChild(tr);
+                </tr>`;
+        }
+
+        // Menampilkan/menyembunyikan seluruh baris siswa dalam satu kelompok wilayah (accordion per kota)
+        function toggleProfilGroup(groupId) {
+            const rows = document.querySelectorAll(`tr[data-group="${groupId}"]`);
+            if (rows.length === 0) return;
+            const nowHidden = !rows[0].classList.contains('hidden');
+            rows.forEach(r => r.classList.toggle('hidden', nowHidden));
+            const icon = document.getElementById(`icon-${groupId}`);
+            if (icon) icon.classList.toggle('-rotate-90', nowHidden);
+        }
+
+        // Render daftar Profil Penerima: mendukung pencarian bebas (nama/wilayah/sekolah/ID/kelas) dan
+        // otomatis dikelompokkan per Wilayah (dengan opsi hide/collapse per kota) untuk login Umum & Admin Utama,
+        // sedangkan Mentor Wilayah tetap melihat tampilan datar karena datanya sudah tersaring ke 1 wilayah saja.
+        function renderProfilPenerimaList(searchTerm = '') {
+            const body = document.getElementById('profile-siswa-list');
+            if (!body) return;
+
+            let visible = getVisibleSiswa();
+
+            const term = (searchTerm || '').trim().toLowerCase();
+            if (term) {
+                visible = visible.filter(s =>
+                    (s.nama || '').toLowerCase().includes(term) ||
+                    (s.wilayah || '').toLowerCase().includes(term) ||
+                    (s.sekolah || '').toLowerCase().includes(term) ||
+                    (s.id || '').toLowerCase().includes(term) ||
+                    (s.kelas || '').toLowerCase().includes(term) ||
+                    (s.mentor || '').toLowerCase().includes(term)
+                );
+            }
+
+            if (visible.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-xs italic">${term ? 'Tidak ada siswa yang cocok dengan pencarian.' : 'Belum ada data penerima untuk wilayah pembinaan ini.'}</td></tr>`;
+                return;
+            }
+
+            // Guest (belum login) & Admin Utama melihat semua wilayah -> tampilkan dikelompokkan per kota
+            const tampilkanBerkelompok = !currentUser || currentUser.role === 'admin-utama';
+
+            if (!tampilkanBerkelompok) {
+                body.innerHTML = visible.map(s => buatBarisProfilSiswa(s)).join('');
+                return;
+            }
+
+            const groups = {};
+            visible.forEach(s => {
+                const key = s.wilayah || 'Tanpa Wilayah';
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(s);
             });
+
+            const html = Object.keys(groups).sort().map((kota, gi) => {
+                const groupId = `profil-group-${gi}`;
+                const rows = groups[kota].map(s => buatBarisProfilSiswa(s, ` data-group="${groupId}"`)).join('');
+                return `
+                    <tr class="bg-slate-100/80 cursor-pointer select-none hover:bg-slate-200/60 transition" onclick="toggleProfilGroup('${groupId}')">
+                        <td colspan="5" class="p-3">
+                            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                                <i id="icon-${groupId}" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                                <i class="fa-solid fa-location-dot text-custom-orange"></i>
+                                <span>${kota}</span>
+                                <span class="text-slate-400 font-medium">(${groups[kota].length} siswa)</span>
+                            </div>
+                        </td>
+                    </tr>
+                    ${rows}`;
+            }).join('');
+
+            body.innerHTML = html;
         }
 
         // Merender daftar Alumni (Laporan > Alumni): siswa dengan Status Beasiswa "Lulus" atau "Dihentikan"
