@@ -37,11 +37,40 @@
     <!-- FontAwesome for professional illustrative icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background-color: #f8fafc;
         }
+
+        /* ===== Styling Tabel Global: header hijau tipis, garis vertikal pembatas kolom, header bold - isi normal ===== */
+        table thead th {
+            background-color: #ecfdf5 !important;
+            font-weight: 700 !important;
+            border-right: 1px solid #d1fae5;
+        }
+        table thead th:last-child { border-right: none; }
+        table tbody td {
+            font-weight: 400 !important;
+            border-right: 1px solid #f1f5f9;
+        }
+        table tbody td:last-child { border-right: none; }
+        table tbody td * { font-weight: inherit; }
+        table tbody td select, table tbody td input, table tbody td button, table tbody td i {
+            font-weight: 500 !important;
+        }
+
+        /* ===== Panel warna lembut untuk kotak/kartu (nuansa berwarna namun tetap elegan) ===== */
+        .panel-slate   { background: linear-gradient(150deg, #f8fafc 0%, #ffffff 65%); }
+        .panel-emerald { background: linear-gradient(150deg, #ecfdf5 0%, #ffffff 65%); }
+        .panel-blue    { background: linear-gradient(150deg, #eff6ff 0%, #ffffff 65%); }
+        .panel-indigo  { background: linear-gradient(150deg, #eef2ff 0%, #ffffff 65%); }
+        .panel-purple  { background: linear-gradient(150deg, #f5f3ff 0%, #ffffff 65%); }
+        .panel-amber   { background: linear-gradient(150deg, #fffbeb 0%, #ffffff 65%); }
+        .panel-rose    { background: linear-gradient(150deg, #fff1f2 0%, #ffffff 65%); }
+        .panel-teal    { background: linear-gradient(150deg, #f0fdfa 0%, #ffffff 65%); }
+        .panel-cyan    { background: linear-gradient(150deg, #ecfeff 0%, #ffffff 65%); }
+        .panel-pink    { background: linear-gradient(150deg, #fdf2f8 0%, #ffffff 65%); }
         .progress-ring__circle {
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
@@ -272,7 +301,7 @@
 
                 <!-- Cards Agregat -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center card-hover">
+                    <div class="panel-slate p-4 rounded-xl border border-slate-200 shadow-sm text-center card-hover">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Penerima</p>
                         <p id="dash-total-penerima" class="text-2xl font-extrabold text-slate-800 mt-1">0</p>
                         <p class="text-[10px] text-slate-400 font-medium">Siswa Aktif & Alumni</p>
@@ -292,7 +321,7 @@
                 <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Top 10 Hafalan Terbanyak -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                    <div class="panel-amber p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Top 10 Hafalan Terbanyak</h3>
                         <div id="top-hafalan-list" class="space-y-3.5">
                             <!-- Data terisi otomatis melalui javascript -->
@@ -300,7 +329,7 @@
                     </div>
 
                     <!-- Berdasarkan Gender -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col justify-between">
+                    <div class="panel-blue p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col justify-between">
                         <div>
                             <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Penerima Berdasarkan Gender & Jenjang</h3>
                             <div class="flex items-center justify-around mb-6 bg-slate-50 p-4 rounded-xl">
@@ -328,7 +357,7 @@
                 <!-- Row 2: Kehadiran Pembinaan (kiri) & Edukasi Rutin (kanan) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <!-- Kehadiran Pembinaan Berdasarkan Kota -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                    <div class="panel-teal p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                             <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
                             <div class="flex items-center gap-2 text-xs">
@@ -345,7 +374,7 @@
                     </div>
 
                     <!-- Edukasi Rutin -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
+                    <div class="panel-purple p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Edukasi Rutin</h3>
                         <div class="relative flex-1 flex items-center justify-center h-72"><canvas id="edukasiRutinChart"></canvas></div>
                     </div>
@@ -354,7 +383,7 @@
                 <!-- Row 3: Dampak Sosial & Outcome Alumni -->
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Dampak Sosial -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                    <div class="panel-rose p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Dampak Sosial & Outcome Alumni</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
@@ -420,7 +449,7 @@
                 </div>
                 <p id="import-siswa-status" class="text-xs font-semibold hidden"></p>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-siswa">
+                <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-siswa">
                     <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Terintegrasi</span>
                         <div class="relative w-full sm:w-72">
@@ -471,7 +500,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-profil-penerima">
+                <div class="panel-blue rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-profil-penerima">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs md:text-sm">
                             <thead>
@@ -507,7 +536,7 @@
                     </button>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-alumni">
+                <div class="panel-indigo rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="table-alumni">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs md:text-sm">
                             <thead>
@@ -541,7 +570,7 @@
                 <!-- Row 1: Profile & Health Score Ring -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <!-- Profile Card -->
-                    <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center md:items-start relative overflow-hidden">
+                    <div class="xl:col-span-2 panel-slate rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center md:items-start relative overflow-hidden">
                         <div class="w-36 h-48 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative">
                             <img id="detail-foto" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300" alt="Foto Siswa" class="w-full h-full object-cover">
                         </div>
@@ -566,7 +595,7 @@
                     </div>
 
                     <!-- Health Score Ring -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+                    <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
                         <div class="flex items-center space-x-1.5 mb-2"><h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Student Health Score</h3></div>
                         <div class="flex items-center justify-between gap-4 flex-1">
                             <div class="relative w-32 h-32 flex items-center justify-center flex-shrink-0">
@@ -587,19 +616,19 @@
 
                 <!-- Row 1.5: Key Metrics Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
+                    <div class="panel-blue p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-graduation-cap text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Rata-rata Nilai Raport</p><p id="detail-metrik-nilai" class="text-lg font-bold text-slate-800">-</p></div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
+                    <div class="panel-emerald p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-book-quran text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Hafalan</p><p id="detail-metrik-hafalan" class="text-lg font-bold text-slate-800">-</p></div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
+                    <div class="panel-purple p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-purple-50 text-purple-600 rounded-xl"><i class="fa-solid fa-calendar-check text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Kehadiran</p><p id="detail-metrik-kehadiran" class="text-lg font-bold text-slate-800">-</p></div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
+                    <div class="panel-amber p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-trophy text-lg"></i></div>
                         <div><p class="text-[11px] text-slate-400 font-medium">Prestasi</p><p id="detail-metrik-prestasi" class="text-lg font-bold text-slate-800">-</p></div>
                     </div>
@@ -607,13 +636,13 @@
 
                 <!-- Row 2: Double Charts -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Akademik (Nilai Rata-rata)</h3><div class="relative h-56"><canvas id="academicChartDetail"></canvas></div></div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Hafalan Al-Qur'an (Juz)</h3><div class="relative h-56"><canvas id="hafalanChartDetail"></canvas></div></div>
+                    <div class="panel-teal p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Akademik (Nilai Rata-rata)</h3><div class="relative h-56"><canvas id="academicChartDetail"></canvas></div></div>
+                    <div class="panel-cyan p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Hafalan Al-Qur'an (Juz)</h3><div class="relative h-56"><canvas id="hafalanChartDetail"></canvas></div></div>
                 </div>
 
                 <!-- Row 3: Informasi Pribadi & Keluarga Orang Tua -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="panel-slate p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                             <i class="fa-solid fa-address-card text-blue-600 text-lg"></i>
                             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Informasi Pribadi Siswa</h3>
@@ -626,7 +655,7 @@
                             <tr><td class="py-2.5 text-slate-400 font-medium">No. HP / WA</td><td id="detail-hp" class="py-2.5 font-semibold text-slate-700">0812-3456-7890</td></tr>
                         </table>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="panel-slate p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                             <i class="fa-solid fa-people-roof text-emerald-600 text-lg"></i>
                             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Informasi Keluarga & Orang Tua</h3>
@@ -643,7 +672,7 @@
 
                 <!-- Row 4: Performance, Timeline & Warnings -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="panel-amber p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                             <i class="fa-solid fa-trophy text-amber-500 text-base"></i>
                             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Prestasi Siswa</h3>
@@ -653,7 +682,7 @@
                         </div>
                     </div>
                     
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="panel-indigo p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-slate-100">
                             <i class="fa-solid fa-timeline text-indigo-600 text-base"></i>
                             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Riwayat Pembinaan</h3>
@@ -707,7 +736,7 @@
                 <div id="pa-tab-input" class="space-y-6">
 
                 <!-- SECTION 1: PEMBINAAN -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-blue rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-pembinaan')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-blue-500 text-white rounded-lg text-xs"><i class="fa-solid fa-book"></i></div>
@@ -745,7 +774,7 @@
                 </div>
 
                 <!-- SECTION 2: ABSENSI -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-absensi')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-emerald-500 text-white rounded-lg text-xs"><i class="fa-solid fa-clipboard-user"></i></div>
@@ -773,7 +802,7 @@
                 </div>
 
                 <!-- SECTION 3: REKAP HAFALAN -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-purple rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-hafalan')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-purple-500 text-white rounded-lg text-xs"><i class="fa-solid fa-book-open-reader"></i></div>
@@ -801,7 +830,7 @@
                 </div>
 
                 <!-- SECTION 4: PRESTASI -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-amber rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-prestasi')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-amber-500 text-white rounded-lg text-xs"><i class="fa-solid fa-trophy"></i></div>
@@ -831,7 +860,7 @@
                 </div>
 
                 <!-- SECTION 5: EDUKASI RUTIN -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-teal rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-edukasi')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-teal-500 text-white rounded-lg text-xs"><i class="fa-solid fa-circle-nodes"></i></div>
@@ -860,7 +889,7 @@
                 </div>
 
                 <!-- SECTION 6: PEMBINAAN AL-QURAN -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-pembinaan-quran')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-cyan-600 text-white rounded-lg text-xs"><i class="fa-solid fa-book-quran"></i></div>
@@ -898,7 +927,7 @@
                 </div>
 
                 <!-- SECTION 7: ABSENSI PEMBINAAN AL-QURAN -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-pink rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-absensi-quran')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-teal-600 text-white rounded-lg text-xs"><i class="fa-solid fa-clipboard-check"></i></div>
@@ -938,7 +967,7 @@
                 <!-- ============ SUB TAB: REKAP ============ -->
                 <div id="pa-tab-rekap" class="space-y-6 hidden">
                     <!-- Search Periode (Compact) -->
-                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
+                    <div class="panel-slate rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
                         <span class="font-bold text-slate-500 flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Periode:</span>
                         <input type="date" id="pa-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
                         <span class="text-slate-400">s/d</span>
@@ -949,7 +978,7 @@
                     </div>
 
                     <!-- Info Pembinaan Ringkas -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm p-5">
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-custom-orange"></i> Informasi Pembinaan</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                             <div class="bg-slate-50 rounded-xl p-3">
@@ -972,7 +1001,7 @@
                     </div>
 
                     <!-- Tabel Rekap -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="pa-tab-rekap-table-wrap">
+                    <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="pa-tab-rekap-table-wrap">
                         <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center space-x-3">
                             <div class="p-2 bg-custom-orange text-white rounded-lg text-xs"><i class="fa-solid fa-table-list"></i></div>
                             <h3 class="text-sm font-bold text-slate-800">Rekap Perkembangan Anak</h3>
@@ -1026,7 +1055,7 @@
                 <div id="po-tab-input" class="space-y-6">
 
                 <!-- SECTION 1: PEMBINAAN ORANG TUA -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-blue rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-ortu-pembinaan')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-blue-500 text-white rounded-lg text-xs"><i class="fa-solid fa-school-flag"></i></div>
@@ -1064,7 +1093,7 @@
                 </div>
 
                 <!-- SECTION 2: ABSENSI ORANG TUA -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('sec-ortu-absensi')">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-emerald-500 text-white rounded-lg text-xs"><i class="fa-solid fa-id-card-clip"></i></div>
@@ -1103,7 +1132,7 @@
                 <!-- ============ SUB TAB: REKAP ============ -->
                 <div id="po-tab-rekap" class="space-y-6 hidden">
                     <!-- Search Periode (Compact) -->
-                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
+                    <div class="panel-slate rounded-xl border border-slate-200 shadow-sm px-3 py-2 flex flex-wrap items-center gap-2 text-[11px]">
                         <span class="font-bold text-slate-500 flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-magnifying-glass text-custom-orange"></i> Periode:</span>
                         <input type="date" id="po-rekap-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:border-custom-orange focus:outline-none">
                         <span class="text-slate-400">s/d</span>
@@ -1114,7 +1143,7 @@
                     </div>
 
                     <!-- Info Pembinaan Ringkas -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm p-5">
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-custom-orange"></i> Informasi Pembinaan</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                             <div class="bg-slate-50 rounded-xl p-3">
@@ -1137,7 +1166,7 @@
                     </div>
 
                     <!-- Tabel Rekap -->
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="po-tab-rekap-table-wrap">
+                    <div class="panel-emerald rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="po-tab-rekap-table-wrap">
                         <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center space-x-3">
                             <div class="p-2 bg-custom-orange text-white rounded-lg text-xs"><i class="fa-solid fa-table-list"></i></div>
                             <h3 class="text-sm font-bold text-slate-800">Rekap Perkembangan Orang Tua</h3>
@@ -1200,7 +1229,7 @@
 
                 <!-- ============ SUB TAB: INPUT ============ -->
                 <div id="mentor-tab-input" class="space-y-6">
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm p-6">
                         <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Form Input Data Mentor</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="md:col-span-2">
@@ -1248,7 +1277,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="mentor-tab-input-table-wrap">
+                    <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="mentor-tab-input-table-wrap">
                         <div class="p-5 bg-slate-50/80 border-b border-slate-200">
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Mentor Terdaftar</span>
                         </div>
@@ -1276,7 +1305,7 @@
 
                 <!-- ============ SUB TAB: REKAP ============ -->
                 <div id="mentor-tab-rekap" class="space-y-6 hidden">
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="panel-teal rounded-2xl border border-slate-200 shadow-sm p-5">
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-custom-orange"></i> Rekap Keaktifan Mentor</h3>
                         <p class="text-[11px] text-slate-400">Nilai keaktifan dihitung dari intensitas mentor mengisi data perkembangan anak binaannya (Pembinaan, Absensi, Setoran Hafalan, dsb).</p>
                     </div>
@@ -2464,7 +2493,7 @@
                     dataObj.statusEdukasi = dataObj.statusEdukasi || 'Belum';
                     dataObj.wilayah = dataObj.wilayah || 'Jakarta';
                     dataObj.foto = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
-                    dataObj.healthScore = 85;
+                    // Health Score tidak diberi nilai contoh — akan tetap kosong ("-") sampai ada data nyata yang bisa disimpulkan
                     try {
                         await saveSiswaToDB(dataObj);
                         berhasil++;
@@ -2620,7 +2649,7 @@
                                     : m.keaktifan >= 70 ? 'text-amber-600 bg-amber-50 border-amber-100'
                                     : 'text-rose-600 bg-rose-50 border-rose-100';
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center flex flex-col items-center';
+                card.className = 'panel-cyan rounded-2xl border border-slate-200 shadow-sm p-4 text-center flex flex-col items-center';
                 card.innerHTML = `
                     <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-md mb-3">
                         <img src="${m.foto}" class="w-full h-full object-cover" alt="${m.nama}">
@@ -3245,12 +3274,14 @@
             const wilayahEl = document.getElementById('detail-wilayah');
             if (wilayahEl) wilayahEl.innerHTML = `<i class="fa-solid fa-location-dot text-xs mr-1"></i>${s.wilayah || '-'}`;
 
-            const score = s.healthScore || 0;
-            set('detail-health-score', score);
+            const score = (s.healthScore !== undefined && s.healthScore !== null) ? s.healthScore : null;
+            set('detail-health-score', score !== null ? score : '-');
             const ring = document.getElementById('detail-health-ring');
             if (ring) {
                 const circumference = 314.16;
-                ring.setAttribute('stroke-dashoffset', (circumference - (circumference * score / 100)).toFixed(2));
+                ring.setAttribute('stroke-dashoffset', (circumference - (circumference * (score || 0) / 100)).toFixed(2));
+                ring.classList.toggle('text-slate-200', score === null);
+                ring.classList.toggle('text-emerald-500', score !== null);
             }
 
             // Informasi Pribadi Siswa (bersumber dari isian Data Siswa jika tersedia)
@@ -3419,9 +3450,9 @@
                     <td class="p-4 font-medium text-slate-600">${s.kelas || '-'}</td>
                     <td class="p-4">
                         <div class="flex items-center space-x-2">
-                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                            <span class="font-extrabold text-slate-800">${s.healthScore}</span>
-                            <span class="text-slate-400 text-[10px] font-semibold">/100</span>
+                            <div class="w-2.5 h-2.5 rounded-full ${(s.healthScore !== undefined && s.healthScore !== null) ? 'bg-emerald-500' : 'bg-slate-300'}"></div>
+                            <span class="font-extrabold text-slate-800">${(s.healthScore !== undefined && s.healthScore !== null) ? s.healthScore : '-'}</span>
+                            ${(s.healthScore !== undefined && s.healthScore !== null) ? '<span class="text-slate-400 text-[10px] font-semibold">/100</span>' : ''}
                         </div>
                     </td>
                     <td class="p-4 text-center">
@@ -3816,7 +3847,8 @@
                         targetHafalan: getVal('assess-target-hafalan'),
                         aktivitasSosialAnak: getVal('assess-aktivitas-sosial'),
 
-                        healthScore: existing?.healthScore ?? 85
+                        // Health Score tidak diberi nilai contoh — tetap kosong ("-") sampai ada data nyata yang bisa disimpulkan
+                        healthScore: existing?.healthScore ?? null
                     };
 
                     if (editingSiswaDocId) {
