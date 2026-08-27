@@ -55,9 +55,12 @@
             border-right: 1px solid #f1f5f9;
         }
         table tbody td:last-child { border-right: none; }
-        table tbody td * { font-weight: inherit; }
-        table tbody td select, table tbody td input, table tbody td button, table tbody td i {
-            font-weight: 500 !important;
+        /* PENTING: elemen ikon (<i> FontAwesome, class fa-*) SENGAJA TIDAK disentuh sama sekali oleh CSS ini,
+           karena FontAwesome memakai font-weight untuk memilih glyph ikon yang benar (mis. solid = 900).
+           Jika ikut di-override, ikon akan tampil sebagai teks kode (mis. "f053") alih-alih simbol. */
+        table tbody td > select, table tbody td > input, table tbody td > button,
+        table tbody td span, table tbody td p, table tbody td div, table tbody td a {
+            font-weight: inherit;
         }
 
         /* ===== Panel warna lembut untuk kotak/kartu (nuansa berwarna namun tetap elegan) ===== */
@@ -2238,6 +2241,7 @@
 
             sorted.forEach((item, idx) => {
                 const persen = (item.juz / maxJuz) * 100;
+                const labelDiLuar = persen < 25; // jika bar terlalu pendek, taruh label di luar agar tetap terbaca
                 const row = document.createElement('div');
                 row.className = 'flex items-center gap-2';
                 row.innerHTML = `
@@ -2246,8 +2250,9 @@
                     <div class="flex-1 flex items-center gap-2">
                         <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-visible">
                             <div class="bg-gradient-to-r from-custom-orange to-emerald-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
-                                <span class="text-[9px] font-bold text-white">${item.juz.toFixed(1)} Juz</span>
+                                ${!labelDiLuar ? `<span class="text-[9px] font-bold text-white whitespace-nowrap">${item.juz.toFixed(1)} Juz</span>` : ''}
                             </div>
+                            ${labelDiLuar ? `<span class="absolute top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-600 whitespace-nowrap" style="left: calc(${persen}% + 6px);">${item.juz.toFixed(1)} Juz</span>` : ''}
                         </div>
                         <div class="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-md shrink-0">
                             <img src="${item.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100'}" class="w-full h-full object-cover" alt="${item.nama}">
@@ -3274,14 +3279,15 @@
             const wilayahEl = document.getElementById('detail-wilayah');
             if (wilayahEl) wilayahEl.innerHTML = `<i class="fa-solid fa-location-dot text-xs mr-1"></i>${s.wilayah || '-'}`;
 
-            const score = (s.healthScore !== undefined && s.healthScore !== null) ? s.healthScore : null;
-            set('detail-health-score', score !== null ? score : '-');
+            // Catatan: Student Health Score belum memiliki rumus perhitungan nyata dari data yang ada,
+            // sehingga selalu ditampilkan "-" (bukan angka contoh) sampai metodologi penilaian resmi tersedia.
+            set('detail-health-score', '-');
             const ring = document.getElementById('detail-health-ring');
             if (ring) {
                 const circumference = 314.16;
-                ring.setAttribute('stroke-dashoffset', (circumference - (circumference * (score || 0) / 100)).toFixed(2));
-                ring.classList.toggle('text-slate-200', score === null);
-                ring.classList.toggle('text-emerald-500', score !== null);
+                ring.setAttribute('stroke-dashoffset', circumference.toFixed(2));
+                ring.classList.add('text-slate-200');
+                ring.classList.remove('text-emerald-500');
             }
 
             // Informasi Pribadi Siswa (bersumber dari isian Data Siswa jika tersedia)
@@ -3450,9 +3456,8 @@
                     <td class="p-4 font-medium text-slate-600">${s.kelas || '-'}</td>
                     <td class="p-4">
                         <div class="flex items-center space-x-2">
-                            <div class="w-2.5 h-2.5 rounded-full ${(s.healthScore !== undefined && s.healthScore !== null) ? 'bg-emerald-500' : 'bg-slate-300'}"></div>
-                            <span class="font-extrabold text-slate-800">${(s.healthScore !== undefined && s.healthScore !== null) ? s.healthScore : '-'}</span>
-                            ${(s.healthScore !== undefined && s.healthScore !== null) ? '<span class="text-slate-400 text-[10px] font-semibold">/100</span>' : ''}
+                            <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                            <span class="font-extrabold text-slate-800">-</span>
                         </div>
                     </td>
                     <td class="p-4 text-center">
