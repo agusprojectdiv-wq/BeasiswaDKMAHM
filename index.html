@@ -430,23 +430,23 @@
                         </h2>
                         <p class="text-xs text-slate-400">Kelola informasi umum pendaftaran dan wilayah pembinaan seluruh anak asuh</p>
                     </div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <button onclick="downloadTemplateSiswa()" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition">
-                            <i class="fa-solid fa-file-arrow-down"></i>
-                            <span>Download Template</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button onclick="downloadTemplateSiswa()" class="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg shadow-sm transition whitespace-nowrap">
+                            <i class="fa-solid fa-file-arrow-down text-[10px]"></i>
+                            <span>Template</span>
                         </button>
-                        <label class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl shadow-sm transition cursor-pointer">
-                            <i class="fa-solid fa-file-arrow-up"></i>
-                            <span>Upload Excel</span>
+                        <label class="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg shadow-sm transition cursor-pointer whitespace-nowrap">
+                            <i class="fa-solid fa-file-arrow-up text-[10px]"></i>
+                            <span>Upload</span>
                             <input type="file" accept=".xlsx,.xls" onchange="importSiswaFromExcel(event)" class="hidden">
                         </label>
-                        <button onclick="exportTableToExcel('table-siswa', 'Data_Siswa')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
-                            <i class="fa-solid fa-file-excel"></i>
-                            <span>Export Excel</span>
+                        <button onclick="exportTableToExcel('table-siswa', 'Data_Siswa')" class="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition whitespace-nowrap">
+                            <i class="fa-solid fa-file-excel text-[10px]"></i>
+                            <span>Export</span>
                         </button>
-                        <button onclick="openModal()" class="bg-custom-orange hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus"></i>
-                            <span>+ Input Anak Baru</span>
+                        <button onclick="openModal()" class="bg-custom-orange hover:bg-emerald-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-md transition flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-user-plus text-[10px]"></i>
+                            <span>+ Input Baru</span>
                         </button>
                     </div>
                 </div>
@@ -457,7 +457,7 @@
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Terintegrasi</span>
                         <div class="relative w-full sm:w-72">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-slate-400 text-sm"></i>
-                            <input type="text" placeholder="Cari ID, mentor, atau sekolah..." class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs w-full focus:outline-none focus:ring-2 focus:ring-custom-orange/20">
+                            <input type="text" id="daftar-siswa-search-input" oninput="renderSiswaTable(this.value)" placeholder="Cari nama, ID, mentor, sekolah, wilayah..." class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs w-full focus:outline-none focus:ring-2 focus:ring-custom-orange/20">
                         </div>
                     </div>
                     
@@ -1784,7 +1784,7 @@
 
             db.collection('siswa').onSnapshot(snapshot => {
                 databaseSiswa = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
-                renderSiswaTable();
+                renderSiswaTable(document.getElementById('daftar-siswa-search-input')?.value || '');
                 renderProfilPenerimaList(document.getElementById('profil-search-input')?.value || '');
                 if (currentView === 'perkembangan-anak') generatePerkembanganTables();
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
@@ -3407,21 +3407,10 @@
         }
 
         // Render ulang tabel Master Data Siswa (mendukung filter wilayah pembinaan sesuai login)
-        function renderSiswaTable() {
-            const body = document.getElementById('table-siswa-body');
-            if (!body) return;
-            body.innerHTML = '';
-            const visible = getVisibleSiswa();
-
-            if (visible.length === 0) {
-                body.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 text-xs italic">Belum ada data siswa untuk wilayah pembinaan ini.</td></tr>`;
-                return;
-            }
-
-            visible.forEach((s) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition";
-                tr.innerHTML = `
+        // Membuat baris HTML tabel untuk satu siswa di Master Data Siswa
+        function buatBarisSiswa(s, groupAttr = '') {
+            return `
+                <tr class="hover:bg-slate-50/50 transition"${groupAttr}>
                     <td class="p-4 font-bold text-slate-800">${s.id}</td>
                     <td class="p-4 font-bold text-slate-700">${s.nama}</td>
                     <td class="p-4 font-semibold text-slate-600"><i class="fa-solid fa-user-tie text-slate-400 mr-1.5"></i>${s.mentor}</td>
@@ -3433,12 +3422,70 @@
                             <button onclick="editSiswa('${s._docId}')" class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button>
                         </div>
                     </td>
-                `;
-                body.appendChild(tr);
-            });
+                </tr>`;
         }
 
-        // Render ulang daftar Profil Penerima (mendukung filter wilayah pembinaan sesuai login)
+        // Render tabel Master Data Siswa: mendukung pencarian bebas (nama/ID/mentor/sekolah/wilayah) dan
+        // otomatis dikelompokkan per Wilayah (dengan opsi hide/collapse per kota) untuk login Umum & Admin Utama,
+        // sedangkan Mentor Wilayah tetap melihat tampilan datar karena datanya sudah tersaring ke 1 wilayah saja.
+        function renderSiswaTable(searchTerm = '') {
+            const body = document.getElementById('table-siswa-body');
+            if (!body) return;
+
+            let visible = getVisibleSiswa();
+
+            const term = (searchTerm || '').trim().toLowerCase();
+            if (term) {
+                visible = visible.filter(s =>
+                    (s.nama || '').toLowerCase().includes(term) ||
+                    (s.id || '').toLowerCase().includes(term) ||
+                    (s.mentor || '').toLowerCase().includes(term) ||
+                    (s.sekolah || '').toLowerCase().includes(term) ||
+                    (s.wilayah || '').toLowerCase().includes(term) ||
+                    (s.kelas || '').toLowerCase().includes(term)
+                );
+            }
+
+            if (visible.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 text-xs italic">${term ? 'Tidak ada siswa yang cocok dengan pencarian.' : 'Belum ada data siswa untuk wilayah pembinaan ini.'}</td></tr>`;
+                return;
+            }
+
+            // Guest (belum login) & Admin Utama melihat semua wilayah -> tampilkan dikelompokkan per kota
+            const tampilkanBerkelompok = !currentUser || currentUser.role === 'admin-utama';
+
+            if (!tampilkanBerkelompok) {
+                body.innerHTML = visible.map(s => buatBarisSiswa(s)).join('');
+                return;
+            }
+
+            const groups = {};
+            visible.forEach(s => {
+                const key = s.wilayah || 'Tanpa Wilayah';
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(s);
+            });
+
+            const html = Object.keys(groups).sort().map((kota, gi) => {
+                const groupId = `siswa-group-${gi}`;
+                const rows = groups[kota].map(s => buatBarisSiswa(s, ` data-group="${groupId}"`)).join('');
+                return `
+                    <tr class="bg-slate-100/80 cursor-pointer select-none hover:bg-slate-200/60 transition" onclick="toggleWilayahGroup('${groupId}')">
+                        <td colspan="6" class="p-3">
+                            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                                <i id="icon-${groupId}" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                                <i class="fa-solid fa-location-dot text-custom-orange"></i>
+                                <span>${kota}</span>
+                                <span class="text-slate-400 font-medium">(${groups[kota].length} siswa)</span>
+                            </div>
+                        </td>
+                    </tr>
+                    ${rows}`;
+            }).join('');
+
+            body.innerHTML = html;
+        }
+
         // Membuat baris HTML tabel untuk satu siswa (dipakai baik mode flat maupun mode berkelompok per wilayah)
         function buatBarisProfilSiswa(s, groupAttr = '') {
             return `
@@ -3470,7 +3517,7 @@
         }
 
         // Menampilkan/menyembunyikan seluruh baris siswa dalam satu kelompok wilayah (accordion per kota)
-        function toggleProfilGroup(groupId) {
+        function toggleWilayahGroup(groupId) {
             const rows = document.querySelectorAll(`tr[data-group="${groupId}"]`);
             if (rows.length === 0) return;
             const nowHidden = !rows[0].classList.contains('hidden');
@@ -3524,7 +3571,7 @@
                 const groupId = `profil-group-${gi}`;
                 const rows = groups[kota].map(s => buatBarisProfilSiswa(s, ` data-group="${groupId}"`)).join('');
                 return `
-                    <tr class="bg-slate-100/80 cursor-pointer select-none hover:bg-slate-200/60 transition" onclick="toggleProfilGroup('${groupId}')">
+                    <tr class="bg-slate-100/80 cursor-pointer select-none hover:bg-slate-200/60 transition" onclick="toggleWilayahGroup('${groupId}')">
                         <td colspan="5" class="p-3">
                             <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
                                 <i id="icon-${groupId}" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
