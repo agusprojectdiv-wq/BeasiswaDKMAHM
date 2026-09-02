@@ -633,7 +633,7 @@
                     </div>
                     <div class="panel-amber p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
                         <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-trophy text-lg"></i></div>
-                        <div><p class="text-[11px] text-slate-400 font-medium">Prestasi</p><p id="detail-metrik-prestasi" class="text-lg font-bold text-slate-800">-</p></div>
+                        <div><p class="text-[11px] text-slate-400 font-medium">Prestasi</p><p id="detail-metrik-prestasi" class="text-lg font-bold text-slate-800">0 Catatan</p></div>
                     </div>
                 </div>
 
@@ -1212,7 +1212,7 @@
                             <span>Upload Excel</span>
                             <input type="file" accept=".xlsx,.xls" onchange="importMentorFromExcel(event)" class="hidden">
                         </label>
-                        <button onclick="switchMentorTab('rekap'); exportTableToExcel('mentor-tab-input-table-wrap', 'Data_Mentor')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
+                        <button onclick="switchMentorTab('input'); exportTableToExcel('mentor-tab-input-table-wrap', 'Data_Mentor')" class="flex items-center gap-2 text-xs font-bold px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
                             <i class="fa-solid fa-file-excel"></i>
                             <span>Export Excel</span>
                         </button>
@@ -1220,20 +1220,35 @@
                 </div>
                 <p id="import-mentor-status" class="text-xs font-semibold hidden"></p>
 
-                <!-- SUB TAB NAV: INPUT / REKAP -->
+                <!-- SUB TAB NAV: KEAKTIFAN / REKAP -->
                 <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl w-max">
-                    <button id="mentor-tab-btn-input" onclick="switchMentorTab('input')" class="px-5 py-2 rounded-lg text-xs font-bold transition bg-custom-orange text-white shadow-md">
-                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Input
+                    <button id="mentor-tab-btn-rekap" onclick="switchMentorTab('rekap')" class="px-5 py-2 rounded-lg text-xs font-bold transition bg-custom-orange text-white shadow-md">
+                        <i class="fa-solid fa-chart-simple mr-1.5"></i> Keaktifan
                     </button>
-                    <button id="mentor-tab-btn-rekap" onclick="switchMentorTab('rekap')" class="px-5 py-2 rounded-lg text-xs font-bold transition text-slate-500 hover:text-slate-700">
+                    <button id="mentor-tab-btn-input" onclick="switchMentorTab('input')" class="px-5 py-2 rounded-lg text-xs font-bold transition text-slate-500 hover:text-slate-700">
                         <i class="fa-solid fa-table-list mr-1.5"></i> Rekap
                     </button>
                 </div>
 
-                <!-- ============ SUB TAB: INPUT ============ -->
-                <div id="mentor-tab-input" class="space-y-6">
-                    <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm p-6">
-                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Form Input Data Mentor</h3>
+                <!-- ============ SUB TAB: REKAP ============ -->
+                <div id="mentor-tab-rekap" class="space-y-6">
+                    <div class="panel-teal rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-custom-orange"></i> Rekap Keaktifan Mentor</h3>
+                        <p class="text-[11px] text-slate-400">Nilai keaktifan dihitung dari intensitas mentor mengisi data perkembangan anak binaannya (Pembinaan, Absensi, Setoran Hafalan, dsb).</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="mentor-rekap-grid">
+                        <!-- Data terisi otomatis melalui javascript -->
+                    </div>
+                </div>
+                <!-- ============ END SUB TAB: REKAP ============ -->
+
+                <!-- ============ SUB TAB: REKAP (Database Mentor Terdaftar) ============ -->
+                <div id="mentor-tab-input" class="space-y-6 hidden">
+                    <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm p-6 hidden" id="mentor-form-wrap">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 id="mentor-form-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Form Input Data Mentor</h3>
+                            <button onclick="tutupFormMentor()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="md:col-span-2">
                                 <label class="block font-bold text-slate-600 mb-1">Upload Foto Mentor</label>
@@ -1272,7 +1287,10 @@
                                 <textarea id="in-mentor-keterangan" rows="2" placeholder="Catatan tambahan tentang mentor" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none"></textarea>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-4">
+                        <div class="flex justify-end pt-4 gap-2">
+                            <button id="btn-batal-edit-mentor" onclick="tutupFormMentor()" class="border border-slate-200 text-slate-500 hover:bg-slate-50 font-bold px-6 py-3 rounded-xl transition text-xs uppercase">
+                                Batal
+                            </button>
                             <button id="btn-tambah-mentor" onclick="tambahMentor()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-xs uppercase">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span>Simpan Data Mentor</span>
@@ -1281,8 +1299,12 @@
                     </div>
 
                     <div class="panel-cyan rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="mentor-tab-input-table-wrap">
-                        <div class="p-5 bg-slate-50/80 border-b border-slate-200">
+                        <div class="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between gap-3">
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Mentor Terdaftar</span>
+                            <button onclick="bukaFormMentor()" class="bg-custom-orange hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition flex items-center gap-2 shrink-0">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>Input Mentor</span>
+                            </button>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse text-xs md:text-sm">
@@ -1295,6 +1317,7 @@
                                         <th class="p-4 uppercase tracking-wider text-[10px]">Pekerjaan</th>
                                         <th class="p-4 uppercase tracking-wider text-[10px]">Cabang</th>
                                         <th class="p-4 uppercase tracking-wider text-[10px]">Keterangan</th>
+                                        <th class="p-4 uppercase tracking-wider text-[10px] text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100" id="table-mentor-body">
@@ -1302,18 +1325,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
-                <!-- ============ END SUB TAB: INPUT ============ -->
-
-                <!-- ============ SUB TAB: REKAP ============ -->
-                <div id="mentor-tab-rekap" class="space-y-6 hidden">
-                    <div class="panel-teal rounded-2xl border border-slate-200 shadow-sm p-5">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2"><i class="fa-solid fa-chart-simple text-custom-orange"></i> Rekap Keaktifan Mentor</h3>
-                        <p class="text-[11px] text-slate-400">Nilai keaktifan dihitung dari intensitas mentor mengisi data perkembangan anak binaannya (Pembinaan, Absensi, Setoran Hafalan, dsb).</p>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="mentor-rekap-grid">
-                        <!-- Data terisi otomatis melalui javascript -->
                     </div>
                 </div>
                 <!-- ============ END SUB TAB: REKAP ============ -->
@@ -1658,6 +1669,7 @@
         let dashboardChartsInitialized = false;
         let currentStep = 1;
         let editingSiswaDocId = null;
+        let editingMentorDocId = null;
 
         // ===== SISTEM LOGIN & KONTROL AKSES =====
         // Setiap akun login dipetakan ke akun Firebase Authentication dengan email sintetis
@@ -1841,11 +1853,20 @@
         }
 
         // Simpan data mentor baru — otomatis ke Firestore jika terhubung, atau ke array lokal jika belum
-        async function saveMentorToDB(dataObj) {
+        async function saveMentorToDB(dataObj, docId = null) {
             if (firebaseReady) {
-                await db.collection('mentor').add(dataObj);
+                if (docId) {
+                    await db.collection('mentor').doc(docId).set(dataObj, { merge: true });
+                } else {
+                    await db.collection('mentor').add(dataObj);
+                }
             } else {
-                databaseMentor.push({ _docId: 'local-' + Date.now(), ...dataObj });
+                if (docId) {
+                    const idx = databaseMentor.findIndex(m => m._docId === docId);
+                    if (idx > -1) databaseMentor[idx] = { ...databaseMentor[idx], ...dataObj };
+                } else {
+                    databaseMentor.push({ _docId: 'local-' + Date.now(), ...dataObj });
+                }
                 generateMentorTable();
                 generateMentorRekap();
             }
@@ -2569,7 +2590,7 @@
                     if (!dataObj.nama) { gagal++; continue; }
                     dataObj.id = `MTR-2026-${String(databaseMentor.length + berhasil + 1).padStart(3, '0')}`;
                     dataObj.foto = 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200';
-                    dataObj.keaktifan = 75;
+                    dataObj.keaktifan = 0; // Belum ada aktivitas pengisian data — dinolkan, bukan nilai contoh
                     try {
                         await saveMentorToDB(dataObj);
                         berhasil++;
@@ -2626,6 +2647,11 @@
             if (!body) return;
             body.innerHTML = '';
 
+            if (databaseMentor.length === 0) {
+                body.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs italic">Belum ada data mentor terdaftar.</td></tr>`;
+                return;
+            }
+
             databaseMentor.forEach(m => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition border-t border-slate-100";
@@ -2637,6 +2663,7 @@
                     <td class="p-4 font-medium text-slate-600">${m.pekerjaan}</td>
                     <td class="p-4 font-bold text-custom-orange">${m.cabang}</td>
                     <td class="p-4 text-slate-500 text-xs">${m.keterangan || '-'}</td>
+                    <td class="p-4 text-center"><button onclick="editMentor('${m._docId}')" class="text-slate-400 hover:text-slate-600 font-bold text-xs">Edit</button></td>
                 `;
                 body.appendChild(tr);
             });
@@ -2699,12 +2726,18 @@
             if (!nama) { showToast('Nama mentor wajib diisi.', 'warning'); return; }
 
             const btnTambah = document.getElementById('btn-tambah-mentor');
-            if (btnTambah) { btnTambah.disabled = true; btnTambah.innerText = 'Menyimpan...'; }
+            const isEdit = !!editingMentorDocId;
+            const btnIcon = btnTambah?.querySelector('i');
+            if (btnTambah) {
+                btnTambah.disabled = true;
+                if (btnIcon) btnIcon.className = 'fa-solid fa-spinner fa-spin';
+            }
 
             // Foto mentor dipadatkan (resize+kompres) lalu disimpan langsung sebagai base64 di Firestore
             // (Tidak menggunakan Cloud Storage — paket Firebase gratis/Spark tidak menyertakannya)
+            const existing = isEdit ? databaseMentor.find(m => m._docId === editingMentorDocId) : null;
             const fileFoto = document.getElementById('in-mentor-foto').files[0];
-            let foto = 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200';
+            let foto = existing?.foto || 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200';
             if (fileFoto) {
                 try {
                     foto = await compressImageToBase64(fileFoto);
@@ -2715,8 +2748,8 @@
                 }
             }
 
-            const newMentor = {
-                id: `MTR-2026-${String(databaseMentor.length + 1).padStart(3, '0')}`,
+            const dataMentor = {
+                id: existing?.id || `MTR-2026-${String(databaseMentor.length + 1).padStart(3, '0')}`,
                 nama: nama,
                 jenisKelamin: document.getElementById('in-mentor-gender').value,
                 alamat: document.getElementById('in-mentor-alamat').value || '-',
@@ -2724,22 +2757,66 @@
                 cabang: document.getElementById('in-mentor-cabang').value || '-',
                 keterangan: document.getElementById('in-mentor-keterangan').value || '-',
                 foto: foto,
-                keaktifan: 75 // nilai awal (baseline) mentor baru sebelum ada aktivitas pengisian data
+                // Belum ada aktivitas pengisian data — dinolkan, bukan nilai contoh (dipertahankan saat edit)
+                keaktifan: existing?.keaktifan ?? 0
             };
 
             try {
-                await saveMentorToDB(newMentor);
-                showToast('Data mentor baru berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ''), 'success');
+                await saveMentorToDB(dataMentor, editingMentorDocId);
+                showToast(isEdit ? 'Perubahan data mentor berhasil disimpan!' : 'Data mentor baru berhasil disimpan!' + (firebaseReady ? ' Tersinkron ke database real-time.' : ''), 'success');
             } catch (err) {
                 console.error('[Firebase] Gagal menyimpan data mentor:', err);
                 showToast('Gagal menyimpan data mentor ke database. Periksa koneksi Firebase Anda.', 'error');
             } finally {
-                if (btnTambah) { btnTambah.disabled = false; btnTambah.innerText = 'Simpan Data Mentor'; }
+                if (btnTambah) { btnTambah.disabled = false; }
             }
             generateMentorTable();
+            tutupFormMentor(); // reset form, keluar dari mode edit, dan sembunyikan form setelah tersimpan
+        }
 
-            // Reset form
+        // Menampilkan Form Input Data Mentor dalam keadaan kosong (mode tambah data baru)
+        function bukaFormMentor() {
+            resetFormMentor();
+            document.getElementById('mentor-form-wrap').classList.remove('hidden');
+            document.getElementById('mentor-form-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Menyembunyikan kembali Form Input Data Mentor & mengosongkan isiannya
+        function tutupFormMentor() {
+            resetFormMentor();
+            document.getElementById('mentor-form-wrap').classList.add('hidden');
+        }
+
+        // Membuka data mentor yang sudah ada untuk diedit / dilengkapi datanya
+        function editMentor(docId) {
+            const m = databaseMentor.find(x => x._docId === docId);
+            if (!m) return;
+            editingMentorDocId = docId;
+
+            document.getElementById('mentor-form-title').innerText = `Edit Data Mentor: ${m.nama}`;
+            document.getElementById('in-mentor-nama').value = m.nama || '';
+            document.getElementById('in-mentor-gender').value = m.jenisKelamin || 'Laki-laki';
+            document.getElementById('in-mentor-alamat').value = m.alamat || '';
+            document.getElementById('in-mentor-pekerjaan').value = m.pekerjaan || '';
+            document.getElementById('in-mentor-cabang').value = m.cabang || '';
+            document.getElementById('in-mentor-keterangan').value = (m.keterangan && m.keterangan !== '-') ? m.keterangan : '';
+            document.getElementById('preview-foto-mentor').innerHTML = m.foto ? `<img src="${m.foto}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-slate-300 text-2xl"></i>';
+
+            document.getElementById('btn-tambah-mentor').querySelector('span').innerText = 'Simpan Perubahan';
+
+            switchMentorTab('input');
+            document.getElementById('mentor-form-wrap').classList.remove('hidden');
+            document.getElementById('mentor-form-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Mengosongkan kembali isian Form Input Data Mentor (dipakai baik saat batal maupun setelah tersimpan)
+        function resetFormMentor() {
+            editingMentorDocId = null;
+            document.getElementById('mentor-form-title').innerText = 'Form Input Data Mentor';
+            document.getElementById('btn-tambah-mentor').querySelector('span').innerText = 'Simpan Data Mentor';
+
             document.getElementById('in-mentor-nama').value = '';
+            document.getElementById('in-mentor-gender').value = 'Laki-laki';
             document.getElementById('in-mentor-alamat').value = '';
             document.getElementById('in-mentor-pekerjaan').value = '';
             document.getElementById('in-mentor-cabang').value = '';
@@ -3078,7 +3155,7 @@
                     <td class="p-4 font-bold text-slate-800">${siswa.nama}</td>
                     <td class="p-4">
                         <div class="flex items-center gap-4">
-                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Hadir" class="accent-emerald-600 w-4 h-4"> Hadir</label>
                             <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir</label>
                         </div>
                     </td>
@@ -3159,7 +3236,7 @@
                         <td class="p-4 font-bold text-slate-800">${siswa.nama}</td>
                         <td class="p-4">
                             <div class="flex items-center gap-4">
-                                <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-quran-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir</label>
+                                <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-quran-${index}" value="Hadir" class="accent-emerald-600 w-4 h-4"> Hadir</label>
                                 <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600"><input type="radio" name="absen-quran-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir</label>
                             </div>
                         </td>
@@ -3200,7 +3277,7 @@
                     <td class="p-4">
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600">
-                                <input type="radio" name="ortu-absen-${index}" value="Hadir" checked class="accent-emerald-600 w-4 h-4"> Hadir
+                                <input type="radio" name="ortu-absen-${index}" value="Hadir" class="accent-emerald-600 w-4 h-4"> Hadir
                             </label>
                             <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-600">
                                 <input type="radio" name="ortu-absen-${index}" value="Tidak Hadir" class="accent-emerald-600 w-4 h-4"> Tidak Hadir
@@ -3329,7 +3406,7 @@
             set('detail-metrik-kehadiran', persenKehadiran !== null ? `${persenKehadiran.toFixed(0)}%` : '-');
 
             const prestasiEntries = riwayatSiswa.filter(r => r.prestasiAkademik || r.prestasiNonAkademik);
-            set('detail-metrik-prestasi', prestasiEntries.length > 0 ? `${prestasiEntries.length} Catatan` : '-');
+            set('detail-metrik-prestasi', prestasiEntries.length > 0 ? `${prestasiEntries.length} Catatan` : '0 Catatan');
 
             // ----- Health Score breakdown bars (Akademik / Tahfidz / Kehadiran), hanya terisi jika ada data nyata -----
             const setBar = (barId, valId, persen) => {
