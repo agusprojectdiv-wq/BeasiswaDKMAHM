@@ -163,7 +163,7 @@
                 </button>
                 <button onclick="switchView('profil-penerima')" id="btn-profil-penerima" class="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
                     <i class="fa-solid fa-user-check text-lg w-5 text-center"></i>
-                    <span>Profil Penerima</span>
+                    <span>Profil Anak Yatim Juara</span>
                 </button>
                 <button onclick="switchView('data-mentor')" id="btn-data-mentor" class="hidden w-full items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-medium text-left">
                     <i class="fa-solid fa-chalkboard-user text-lg w-5 text-center"></i>
@@ -282,9 +282,9 @@
                         <p id="dash-greeting" class="text-xs font-semibold text-emerald-100 uppercase tracking-wider mb-1">Selamat Datang</p>
                         <h2 class="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
                             <i class="fa-solid fa-hand-holding-heart"></i>
-                            Dashboard Monitoring Beasiswa DKM AHM - Rumah Zakat
+                            Dashboard Monitoring Beasiswa Rumah Zakat
                         </h2>
-                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa.</p>
+                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa, tersinkron real-time.</p>
                     </div>
                 </div>
 
@@ -487,7 +487,7 @@
                     <div>
                         <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
                             <span class="p-1.5 bg-custom-orange rounded-lg text-white"><i class="fa-solid fa-user-check text-sm"></i></span>
-                            Profil & Monitoring Perkembangan Siswa
+                            Profil Anak Yatim Juara & Monitoring Perkembangan
                         </h2>
                         <p class="text-xs text-slate-400">Pilih berkas siswa aktif di bawah untuk meninjau Indeks Kesehatan Belajar (Student Health Score)</p>
                     </div>
@@ -640,7 +640,15 @@
                 <!-- Row 2: Double Charts -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <div class="panel-teal p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Akademik (Nilai Rata-rata)</h3><div class="relative h-56"><canvas id="academicChartDetail"></canvas></div></div>
-                    <div class="panel-cyan p-6 rounded-2xl border border-slate-200 shadow-sm"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Perkembangan Hafalan Al-Qur'an (Juz)</h3><div class="relative h-56"><canvas id="hafalanChartDetail"></canvas></div></div>
+                    <div class="panel-cyan p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Perkembangan Hafalan Al-Qur'an (114 Surat)</h3>
+                            <span class="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span> Sudah Hafal</span>
+                        </div>
+                        <div id="hafalanGridDetail" class="h-56 overflow-y-auto pr-1 grid grid-cols-10 sm:grid-cols-12 gap-1">
+                            <!-- 114 kotak surat terisi otomatis melalui javascript: renderHafalanSurahGrid() -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Row 3: Informasi Pribadi & Keluarga Orang Tua -->
@@ -1802,6 +1810,11 @@
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
                 if (currentView === 'alumni') renderAlumniList();
                 if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderDashboardSummary(); }
+
+                if (pendingStudentIdFromUrl) {
+                    viewStudentDetail(pendingStudentIdFromUrl);
+                    pendingStudentIdFromUrl = null;
+                }
             }, err => console.error('[Firebase] Gagal memuat data siswa:', err));
 
             db.collection('mentor').onSnapshot(snapshot => {
@@ -2249,7 +2262,7 @@
             container.innerHTML = '';
 
             const sourceData = getVisibleSiswa()
-                .map(s => ({ nama: s.nama, juz: estimasiJuzSiswa(s), foto: s.foto }))
+                .map(s => ({ nama: s.nama, juz: estimasiJuzSiswa(s), foto: s.foto, docId: s._docId }))
                 .filter(d => d.juz > 0);
 
             if (sourceData.length === 0) {
@@ -2267,7 +2280,7 @@
                 row.className = 'flex items-center gap-2';
                 row.innerHTML = `
                     <span class="text-[10px] font-bold text-slate-400 w-4 text-right">${idx + 1}</span>
-                    <span class="text-[11px] font-semibold text-slate-600 w-24 truncate" title="${item.nama}">${item.nama}</span>
+                    <a href="javascript:void(0)" onclick="bukaDetailSiswaTabBaru('${item.docId}')" class="text-[11px] font-semibold text-custom-orange hover:underline hover:text-emerald-700 w-24 truncate cursor-pointer" title="${item.nama} — klik untuk buka profil di tab baru">${item.nama}</a>
                     <div class="flex-1 flex items-center gap-2">
                         <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-visible">
                             <div class="bg-gradient-to-r from-custom-orange to-emerald-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
@@ -2871,7 +2884,7 @@
                 document.getElementById('btn-daftar-siswa')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
             } else if (viewId === 'profil-penerima') {
                 document.getElementById('view-profil-penerima').classList.remove('hidden');
-                parent.innerText = "Profil Penerima"; child.innerText = "Daftar Kesehatan";
+                parent.innerText = "Profil Anak Yatim Juara"; child.innerText = "Daftar Kesehatan";
                 document.getElementById('btn-profil-penerima')?.classList.add('bg-custom-orange', 'text-white', 'shadow-lg', 'menu-active');
             } else if (viewId === 'perkembangan-anak') {
                 document.getElementById('view-perkembangan-anak').classList.remove('hidden');
@@ -3322,23 +3335,31 @@
             }
         }
 
-        // Membuka halaman Detail Profil Penerima untuk siswa manapun (docId), terlepas dari
+        // Membuka halaman Detail Profil Anak Yatim Juara untuk siswa manapun (docId), terlepas dari
         // kelengkapan data di menu Data Siswa / Perkembangan lainnya — selalu bisa dibuka.
+        // Membuka Detail Profil Anak Yatim Juara di tab baru (dipakai dari daftar Top 10 Hafalan Dashboard)
+        function bukaDetailSiswaTabBaru(docId) {
+            if (!docId) return;
+            const url = `${window.location.pathname}?studentId=${encodeURIComponent(docId)}`;
+            window.open(url, '_blank');
+        }
+
         function viewStudentDetail(docId) {
             const s = databaseSiswa.find(x => x._docId === docId) || databaseSiswa[0];
             if (!s) { showToast('Data siswa tidak ditemukan.', 'error'); return; }
 
             currentView = 'student-detail';
+            document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-profil-penerima').classList.add('hidden');
             document.getElementById('view-student-detail').classList.remove('hidden');
-            document.getElementById('breadcrumb-parent').innerText = "Profil Penerima";
+            document.getElementById('breadcrumb-parent').innerText = "Profil Anak Yatim Juara";
             document.getElementById('breadcrumb-child').innerText = `Detail Siswa (${s.nama})`;
 
             populateStudentDetail(s);
             initDetailCharts(s);
         }
 
-        // Mengisi seluruh field pada halaman Detail Profil Penerima berdasarkan data siswa yang dipilih.
+        // Mengisi seluruh field pada halaman Detail Profil Anak Yatim Juara berdasarkan data siswa yang dipilih.
         // Field yang belum terisi di Data Siswa akan ditampilkan sebagai "-" (bukan memblokir halaman).
         function populateStudentDetail(s) {
             const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = (val === undefined || val === null || val === '') ? '-' : val; };
@@ -3603,7 +3624,7 @@
             if (icon) icon.classList.toggle('-rotate-90', nowHidden);
         }
 
-        // Render daftar Profil Penerima: mendukung pencarian bebas (nama/wilayah/sekolah/ID/kelas) dan
+        // Render daftar Profil Anak Yatim Juara: mendukung pencarian bebas (nama/wilayah/sekolah/ID/kelas) dan
         // otomatis dikelompokkan per Wilayah (dengan opsi hide/collapse per kota) untuk login Umum & Admin Utama,
         // sedangkan Mentor Wilayah tetap melihat tampilan datar karena datanya sudah tersaring ke 1 wilayah saja.
         function renderProfilPenerimaList(searchTerm = '') {
@@ -3703,7 +3724,30 @@
             });
         }
 
-        window.onload = function() { initFirebase(); applyAccessControl(); switchView('dashboard'); };
+        // Menyimpan permintaan buka detail siswa dari URL (?studentId=...), dipakai saat tab baru dibuka
+        // dari daftar Top 10 Hafalan Dashboard — dieksekusi begitu data siswa selesai dimuat.
+        let pendingStudentIdFromUrl = null;
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            pendingStudentIdFromUrl = params.get('studentId');
+
+            initFirebase();
+            applyAccessControl();
+
+            if (pendingStudentIdFromUrl) {
+                // Mode lokal (tanpa Firebase): langsung coba tampilkan dari data yang ada di browser ini
+                if (!firebaseReady) {
+                    setTimeout(() => {
+                        viewStudentDetail(pendingStudentIdFromUrl);
+                        pendingStudentIdFromUrl = null;
+                    }, 100);
+                }
+                // Mode Firestore: ditangani otomatis oleh listener 'siswa' di initFirestoreListeners()
+            } else {
+                switchView('dashboard');
+            }
+        };
 
         // Populate drop-down list Surat pada menu input asessment (Step 4)
         function initAssessSuratOptions() {
@@ -4042,7 +4086,6 @@
         }
 
         let academicChartDetailInstance = null;
-        let hafalanChartDetailInstance = null;
 
         // Menampilkan pesan kosong yang jujur pada canvas ketika data belum tersedia,
         // alih-alih menampilkan grafik dengan data contoh/dummy.
@@ -4068,14 +4111,28 @@
             ctx.fillText(line, canvas.width / 2, y);
         }
 
+        // Menampilkan kotak 114 Surat Al-Qur'an, ditandai hijau untuk surat yang sudah tercakup
+        // dalam rentang hafalan siswa (sesuai isian Assessment: Surat Dari s.d. Surat Sampai).
+        function renderHafalanSurahGrid(s) {
+            const grid = document.getElementById('hafalanGridDetail');
+            if (!grid) return;
+
+            const idxDari = (s.suratDariIndex !== undefined && s.suratDariIndex !== null && s.suratDariIndex !== '') ? parseInt(s.suratDariIndex) : null;
+            const idxSampai = (s.suratSampaiIndex !== undefined && s.suratSampaiIndex !== null && s.suratSampaiIndex !== '') ? parseInt(s.suratSampaiIndex) : null;
+            const adaData = idxDari !== null && idxSampai !== null && !isNaN(idxDari) && !isNaN(idxSampai);
+
+            grid.innerHTML = listSurat.map((surat, i) => {
+                const sudahHafal = adaData && i >= idxDari && i <= idxSampai;
+                return `<div class="aspect-square rounded flex items-center justify-center text-[8px] font-bold leading-none transition ${sudahHafal ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}" title="${i + 1}. ${surat.nama}${sudahHafal ? ' — Sudah dihafal' : ''}">${i + 1}</div>`;
+            }).join('');
+        }
+
         // Merender ulang grafik pada Detail Siswa berdasarkan data nyata siswa yang sedang dibuka.
         // Jika belum ada data pendukung, tampilkan keterangan "data dalam proses identifikasi" (bukan data contoh).
         function initDetailCharts(s) {
             const academicCanvas = document.getElementById('academicChartDetail');
-            const hafalanCanvas = document.getElementById('hafalanChartDetail');
 
             if (academicChartDetailInstance) { academicChartDetailInstance.destroy(); academicChartDetailInstance = null; }
-            if (hafalanChartDetailInstance) { hafalanChartDetailInstance.destroy(); hafalanChartDetailInstance = null; }
 
             // Ambil rekam nilai raport siswa ini dari riwayat sesi Perkembangan Anak (jika ada)
             const nilaiPerTahun = {};
@@ -4105,27 +4162,8 @@
                 tampilkanCanvasKosong(academicCanvas, 'Data nilai raport belum diisi — sedang dalam proses identifikasi.');
             }
 
-            // Estimasi capaian hafalan saat ini (nyata, dari Assessment Data Siswa) dibandingkan target 30 Juz
-            const juzSaatIni = estimasiJuzSiswa(s);
-            if (juzSaatIni > 0) {
-                hafalanChartDetailInstance = new Chart(hafalanCanvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Capaian Hafalan'],
-                        datasets: [
-                            { label: 'Sudah Dihafal (Juz)', data: [juzSaatIni], backgroundColor: '#059669', borderRadius: 6 },
-                            { label: 'Sisa Menuju 30 Juz', data: [30 - juzSaatIni], backgroundColor: '#e2e8f0', borderRadius: 6 }
-                        ]
-                    },
-                    options: {
-                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                        scales: { x: { stacked: true, max: 30, ticks: { stepSize: 5 } }, y: { stacked: true } },
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
-                    }
-                });
-            } else {
-                tampilkanCanvasKosong(hafalanCanvas, 'Rentang hafalan belum diisi pada Assessment — sedang dalam proses identifikasi.');
-            }
+            // Kotak 114 Surat: hijau untuk surat yang tercakup dalam rentang hafalan siswa (Assessment)
+            renderHafalanSurahGrid(s);
         }
     </script>
 </body>
