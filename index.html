@@ -123,6 +123,48 @@
             #db-status-banner { display: none !important; }
             .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: none !important; }
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* Area yang biasanya discroll di layar (Riwayat Pembinaan, Kotak 114 Surat, dsb) ditampilkan PENUH saat dicetak,
+               bukan hanya bagian yang kelihatan di layar. */
+            #detail-riwayat-pembinaan, #hafalanGridDetail, #detail-prestasi-list, #detail-early-warning {
+                max-height: none !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Menjaga agar judul kartu (mis. "Informasi Pribadi Siswa") tidak terpisah halaman dari isinya:
+               satu kartu dianggap satu kesatuan saat pindah halaman cetak. Hanya diterapkan pada kartu
+               ringkasan di Detail Siswa (bukan tabel data panjang seperti Data Siswa/Profil Penerima/Alumni,
+               yang memang wajar terpotong per baris antar halaman). */
+            #view-student-detail .panel-slate,
+            #view-student-detail .panel-emerald,
+            #view-student-detail .panel-blue,
+            #view-student-detail .panel-indigo,
+            #view-student-detail .panel-purple,
+            #view-student-detail .panel-amber,
+            #view-student-detail .panel-rose,
+            #view-student-detail .panel-teal,
+            #view-student-detail .panel-cyan,
+            #view-student-detail .panel-pink,
+            #view-student-detail .bg-amber-50\/70,
+            #view-student-detail .bg-rose-50\/70,
+            #view-student-detail > .grid > div {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* Judul (h2/h3) tidak boleh menjadi baris terakhir sendirian di ujung halaman;
+               jika tidak muat bersama isinya, seluruh judul + isi dipindah ke halaman berikutnya. */
+            h2, h3, h4 {
+                break-after: avoid-page;
+                page-break-after: avoid;
+                orphans: 3;
+                widows: 3;
+            }
+            p, li, td {
+                orphans: 3;
+                widows: 3;
+            }
         }
     </style>
 </head>
@@ -645,7 +687,7 @@
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Perkembangan Hafalan Al-Qur'an (114 Surat)</h3>
                             <span class="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span> Sudah Hafal</span>
                         </div>
-                        <div id="hafalanGridDetail" class="h-56 overflow-y-auto pr-1 grid grid-cols-10 sm:grid-cols-12 gap-1">
+                        <div id="hafalanGridDetail" class="h-56 overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1">
                             <!-- 114 kotak surat terisi otomatis melalui javascript: renderHafalanSurahGrid() -->
                         </div>
                     </div>
@@ -4123,7 +4165,13 @@
 
             grid.innerHTML = listSurat.map((surat, i) => {
                 const sudahHafal = adaData && i >= idxDari && i <= idxSampai;
-                return `<div class="aspect-square rounded flex items-center justify-center text-[8px] font-bold leading-none transition ${sudahHafal ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}" title="${i + 1}. ${surat.nama}${sudahHafal ? ' — Sudah dihafal' : ''}">${i + 1}</div>`;
+                return `
+                    <div class="flex items-center gap-1.5 text-[10px] py-0.5" title="${i + 1}. ${surat.nama}${sudahHafal ? ' — Sudah dihafal' : ' — Belum dihafal'}">
+                        <span class="w-3.5 h-3.5 rounded-sm border shrink-0 flex items-center justify-center ${sudahHafal ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300'}">
+                            ${sudahHafal ? '<i class="fa-solid fa-check text-white text-[8px]"></i>' : ''}
+                        </span>
+                        <span class="truncate ${sudahHafal ? 'text-slate-700 font-semibold' : 'text-slate-400'}">${i + 1}. ${surat.nama}</span>
+                    </div>`;
             }).join('');
         }
 
