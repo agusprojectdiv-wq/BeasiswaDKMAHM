@@ -30,6 +30,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS (xlsx) CDN for Export Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- ExcelJS: khusus untuk membuat Template Excel dengan dropdown validasi asli (SheetJS versi gratis tidak mendukung ini) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <!-- Firebase SDK (Compat) untuk sinkronisasi database real-time dan autentikasi -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -1418,10 +1420,10 @@
             </div>
 
             <div class="px-6 pt-4 flex gap-2 border-b border-slate-100 bg-slate-50/50">
-                <span id="tab-1" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-custom-orange text-custom-orange">1. Data Umum</span>
-                <span id="tab-2" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400">2. Info Pribadi</span>
-                <span id="tab-3" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400">3. Orang Tua</span>
-                <span id="tab-4" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400">4. Assessment Anak</span>
+                <button type="button" onclick="gotoStep(1)" id="tab-1" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-custom-orange text-custom-orange hover:bg-slate-100/60 transition rounded-t-lg">1. Data Umum</button>
+                <button type="button" onclick="gotoStep(2)" id="tab-2" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-100/60 transition rounded-t-lg">2. Info Pribadi</button>
+                <button type="button" onclick="gotoStep(3)" id="tab-3" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-100/60 transition rounded-t-lg">3. Orang Tua</button>
+                <button type="button" onclick="gotoStep(4)" id="tab-4" class="flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-100/60 transition rounded-t-lg">4. Assessment Anak</button>
             </div>
 
             <form id="siswaForm" class="flex-1 overflow-y-auto p-6 space-y-4 text-xs md:text-sm">
@@ -1600,26 +1602,22 @@
 
                 <!-- STEP 4: ASSESSMENT ANAK (PEMBARUAN) -->
                 <div class="form-step hidden space-y-4" id="step-4">
-                    <!-- 1. Surat yang sudah dihapal -->
+                    <!-- 1. Surat yang sudah dihapal (berdasarkan Juz, mendukung hafalan tidak berurutan cth. mulai dari Juz 30) -->
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <span class="block font-bold text-slate-700 mb-2"><i class="fa-solid fa-book-quran text-custom-orange mr-1.5"></i> 1. Rentang Surat yang Sudah Dihafal</span>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block font-semibold text-slate-500 mb-1">Dari Surat</label>
-                                <select id="assess-surat-dari" onchange="hitungJuzOtomatis()" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none bg-white">
-                                    <!-- Terisi lewat JS (Al-Fatihah s.d An-Nas) -->
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-slate-500 mb-1">Sampai Surat</label>
-                                <select id="assess-surat-sampai" onchange="hitungJuzOtomatis()" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none bg-white">
-                                    <!-- Terisi lewat JS (Al-Fatihah s.d An-Nas) -->
-                                </select>
-                            </div>
+                        <span class="block font-bold text-slate-700 mb-2"><i class="fa-solid fa-book-quran text-custom-orange mr-1.5"></i> 1. Surat yang Sudah Dihafal (berdasarkan Juz)</span>
+                        <div>
+                            <label class="block font-semibold text-slate-500 mb-1">Pilih Juz untuk Menandai Surat yang Dihafal</label>
+                            <select id="assess-pilih-juz" onchange="tampilkanSuratJuz()" class="w-full border border-slate-200 rounded-xl p-2.5 focus:border-custom-orange focus:outline-none bg-white">
+                                <option value="">-- Pilih Juz (1-30) --</option>
+                            </select>
+                            <p class="text-[10px] text-slate-400 mt-1">Bisa memilih juz manapun terlebih dahulu (mis. Juz 30 untuk anak yang mulai hafalan dari akhir Al-Qur'an). Nomor surat tetap mengikuti urutan asli dalam mushaf.</p>
+                        </div>
+                        <div id="assess-surat-juz-list" class="hidden mt-3 max-h-48 overflow-y-auto border border-slate-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 bg-white">
+                            <!-- Checklist surat pada juz terpilih, diisi via JS -->
                         </div>
                         <!-- Output Estimasi Juz Otomatis -->
-                        <div class="mt-3.5 bg-custom-orange/10 border border-custom-orange/20 rounded-xl p-3 flex justify-between items-center text-xs">
-                            <span class="font-bold text-slate-700"><i class="fa-solid fa-calculator mr-1"></i> Estimasi Total Capaian Hafalan:</span>
+                        <div class="mt-3.5 bg-custom-orange/10 border border-custom-orange/20 rounded-xl p-3 flex justify-between items-center text-xs flex-wrap gap-2">
+                            <span class="font-bold text-slate-700"><i class="fa-solid fa-calculator mr-1"></i> Total Surat Ditandai Hafal: <span id="assess-total-surat-hafal" class="font-extrabold text-emerald-600">0</span> Surat</span>
                             <span id="output-estimasi-juz" class="font-extrabold text-custom-orange bg-white px-3 py-1 rounded-lg border border-custom-orange/10 shadow-sm text-sm">0 Juz / Bagian Juz</span>
                         </div>
                     </div>
@@ -2285,14 +2283,13 @@
         }
 
         // Estimasi jumlah Juz hafalan seorang siswa berdasarkan rentang Surat pada Assessment (Step 4)
+        // Estimasi jumlah Juz hafalan seorang siswa berdasarkan seluruh surat yang sudah ditandai hafal
+        // (mendukung hafalan lintas Juz yang tidak berurutan, dengan kompatibilitas data format lama)
         function estimasiJuzSiswa(s) {
-            if (s.suratDariIndex === undefined || s.suratDariIndex === null || s.suratDariIndex === '' ||
-                s.suratSampaiIndex === undefined || s.suratSampaiIndex === null || s.suratSampaiIndex === '') return 0;
-            const idxDari = parseInt(s.suratDariIndex);
-            const idxSampai = parseInt(s.suratSampaiIndex);
-            if (isNaN(idxDari) || isNaN(idxSampai) || idxDari > idxSampai) return 0;
+            const list = getHafalanSurahList(s);
+            if (list.length === 0) return 0;
             let totalHalaman = 0;
-            for (let i = idxDari; i <= idxSampai; i++) totalHalaman += listSurat[i].hal;
+            list.forEach(i => { if (listSurat[i]) totalHalaman += listSurat[i].hal; });
             return totalHalaman / 20;
         }
 
@@ -2497,48 +2494,97 @@
             ['NIK / No KK', 'nik'],
             ['Nama Lengkap Siswa', 'nama'],
             ['Nama Mentor Pendamping', 'mentor'],
-            ['Jenjang Pendidikan (TK/SD - MI/SMP - MTs/SMA - MA/Perguruan Tinggi)', 'jenjangPendidikan'],
+            ['Jenjang Pendidikan', 'jenjangPendidikan', ['TK', 'SD / MI', 'SMP / MTs', 'SMA / MA', 'Perguruan Tinggi']],
             ['Kelas', 'kelas'],
-            ['Wilayah Pembinaan (Bogor/Bekasi/Depok/Jakarta)', 'wilayah'],
+            ['Wilayah Pembinaan', 'wilayah', ['Bogor', 'Bekasi', 'Depok', 'Jakarta']],
             ['Nama Sekolah / Kampus', 'sekolah'],
             ['Bulan Awal Beasiswa (Format: YYYY-MM-DD)', 'bulanAwalBeasiswa'],
-            ['Status Beasiswa (Aktif/Dihentikan/Lulus)', 'statusBeasiswa'],
+            ['Status Beasiswa', 'statusBeasiswa', ['Aktif', 'Dihentikan', 'Lulus']],
             ['Keterangan (isi jika Status Dihentikan/Lulus)', 'keteranganStatus'],
             ['Tempat Lahir', 'tempatLahir'],
             ['Tanggal Lahir (Format: YYYY-MM-DD)', 'tanggalLahir'],
-            ['Jenis Kelamin (Laki-laki/Perempuan)', 'gender'],
+            ['Jenis Kelamin', 'gender', ['Laki-laki', 'Perempuan']],
             ['Alamat Lengkap Rumah', 'alamatRumah'],
             ['No HP / WhatsApp', 'noHp'],
             ['Email', 'email'],
             ['Nama Ayah / Ibu / Wali', 'namaWali'],
-            ['Pendidikan Terakhir Orang Tua', 'pendidikanOrtu'],
+            ['Pendidikan Terakhir Orang Tua', 'pendidikanOrtu', ['SD / Sederajat', 'SMP / Sederajat', 'SMA / Sederajat', 'Diploma (D1-D4)', 'Sarjana (S1)', 'Pascasarjana (S2/S3)']],
             ['Pekerjaan Orang Tua', 'pekerjaanOrtu'],
             ['Penghasilan Bulanan Orang Tua (Angka saja)', 'penghasilanOrtu'],
             ['Jumlah Tanggungan Anak', 'tanggunganAnak'],
-            ['Status Kepemilikan Rumah', 'statusRumah'],
+            ['Status Kepemilikan Rumah', 'statusRumah', ['Milik Sendiri', 'Sewa / Kontrak', 'Menumpang Keluarga', 'Rumah Dinas']],
             ['Aktivitas Sosial/Organisasi Orang Tua', 'aktivitasSosialOrtu'],
-            ['Status Edukasi Rutin (Sudah/Belum)', 'statusEdukasi'],
-            ['Bacaan (Al-Quran/Iqro, dst)', 'bacaanQuran'],
-            ['Jenjang Hafalan (Grade A/Grade B/Grade C/Grade D)', 'jenjangHafalan'],
+            ['Status Edukasi Rutin', 'statusEdukasi', ['Sudah', 'Belum']],
+            ['Bacaan Al-Quran', 'bacaanQuran', ['Al-Quran (Lancar)', 'Al-Quran (Belum Lancar)', 'Iqra']],
+            ['Jenjang Hafalan', 'jenjangHafalan', ['Grade A', 'Grade B', 'Grade C', 'Grade D']],
             ['Target Hafalan', 'targetHafalan'],
             ['Aktivitas Sosial/Organisasi Anak', 'aktivitasSosialAnak']
         ];
 
-        function downloadTemplateSiswa() {
+        // Mengubah nomor kolom (1, 2, 3, ...) menjadi huruf kolom spreadsheet (A, B, ..., Z, AA, AB, ...)
+        function nomorKeHurufKolom(num) {
+            let huruf = '';
+            while (num > 0) {
+                const sisa = (num - 1) % 26;
+                huruf = String.fromCharCode(65 + sisa) + huruf;
+                num = Math.floor((num - 1) / 26);
+            }
+            return huruf;
+        }
+
+        // Membuat file Excel Template dengan dropdown validasi ASLI di kolom-kolom pilihan tetap
+        // (Jenjang Pendidikan, Wilayah, Status Beasiswa, dll) agar isian selalu sesuai pilihan yang ada di webpage.
+        async function downloadTemplateSiswa() {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Data Siswa');
+
             const headers = TEMPLATE_KOLOM_SISWA.map(k => k[0]);
+            ws.addRow(headers);
+            ws.getRow(1).eachCell(cell => {
+                cell.font = { bold: true, color: { argb: 'FF065F46' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+                cell.alignment = { vertical: 'middle', wrapText: true };
+            });
+
             const contoh = [
                 'RZ-2026-010', '3273010101100001', 'Contoh Nama Siswa', 'Ust. Contoh Mentor',
                 'SMA / MA', 'XI IPA 1', 'Jakarta', 'SMA Negeri 1 Contoh', '2026-01-01',
                 'Aktif', '', 'Jakarta', '2009-05-10', 'Perempuan', 'Jl. Contoh Alamat No. 1',
                 '081200000000', 'contoh@email.com', 'Nama Wali Contoh', 'SMA / Sederajat',
                 'Pedagang', '2500000', '3', 'Sewa / Kontrak', 'Pengurus RT/RW', 'Belum',
-                'Al-Quran', 'Grade B', '5 Juz dalam 1 tahun', 'OSIS'
+                'Al-Quran (Lancar)', 'Grade B', '5 Juz dalam 1 tahun', 'OSIS'
             ];
-            const ws = XLSX.utils.aoa_to_sheet([headers, contoh]);
-            ws['!cols'] = headers.map(() => ({ wch: 28 }));
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
-            XLSX.writeFile(wb, 'Template_Data_Siswa.xlsx');
+            ws.addRow(contoh);
+
+            TEMPLATE_KOLOM_SISWA.forEach((_, i) => { ws.getColumn(i + 1).width = 30; });
+
+            // Tambahkan dropdown validasi Excel asli untuk kolom yang punya pilihan tetap (baris 2-500)
+            const JUMLAH_BARIS_TEMPLATE = 500;
+            TEMPLATE_KOLOM_SISWA.forEach((kolom, i) => {
+                const pilihan = kolom[2];
+                if (!pilihan) return;
+                const huruf = nomorKeHurufKolom(i + 1);
+                ws.dataValidations.add(`${huruf}2:${huruf}${JUMLAH_BARIS_TEMPLATE}`, {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${pilihan.join(',')}"`],
+                    showErrorMessage: true,
+                    errorStyle: 'warning',
+                    errorTitle: 'Pilihan tidak sesuai',
+                    error: `Mohon pilih salah satu dari: ${pilihan.join(', ')}`
+                });
+            });
+
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Template_Data_Siswa.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
 
         async function importSiswaFromExcel(event) {
@@ -2598,21 +2644,56 @@
         // ===== TEMPLATE & IMPORT EXCEL: DATA MENTOR =====
         const TEMPLATE_KOLOM_MENTOR = [
             ['Nama Lengkap Mentor', 'nama'],
-            ['Jenis Kelamin (Laki-laki/Perempuan)', 'jenisKelamin'],
+            ['Jenis Kelamin', 'jenisKelamin', ['Laki-laki', 'Perempuan']],
             ['Alamat', 'alamat'],
             ['Pekerjaan', 'pekerjaan'],
             ['Cabang', 'cabang'],
             ['Keterangan', 'keterangan']
         ];
 
-        function downloadTemplateMentor() {
+        async function downloadTemplateMentor() {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Data Mentor');
+
             const headers = TEMPLATE_KOLOM_MENTOR.map(k => k[0]);
+            ws.addRow(headers);
+            ws.getRow(1).eachCell(cell => {
+                cell.font = { bold: true, color: { argb: 'FF065F46' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+                cell.alignment = { vertical: 'middle', wrapText: true };
+            });
+
             const contoh = ['Contoh Nama Mentor', 'Laki-laki', 'Jl. Contoh Alamat No. 5', 'Guru Tahfidz', 'Cabang Jakarta', 'Catatan tambahan (opsional)'];
-            const ws = XLSX.utils.aoa_to_sheet([headers, contoh]);
-            ws['!cols'] = headers.map(() => ({ wch: 28 }));
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Data Mentor');
-            XLSX.writeFile(wb, 'Template_Data_Mentor.xlsx');
+            ws.addRow(contoh);
+
+            TEMPLATE_KOLOM_MENTOR.forEach((_, i) => { ws.getColumn(i + 1).width = 28; });
+
+            const JUMLAH_BARIS_TEMPLATE = 500;
+            TEMPLATE_KOLOM_MENTOR.forEach((kolom, i) => {
+                const pilihan = kolom[2];
+                if (!pilihan) return;
+                const huruf = nomorKeHurufKolom(i + 1);
+                ws.dataValidations.add(`${huruf}2:${huruf}${JUMLAH_BARIS_TEMPLATE}`, {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${pilihan.join(',')}"`],
+                    showErrorMessage: true,
+                    errorStyle: 'warning',
+                    errorTitle: 'Pilihan tidak sesuai',
+                    error: `Mohon pilih salah satu dari: ${pilihan.join(', ')}`
+                });
+            });
+
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Template_Data_Mentor.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
 
         async function importMentorFromExcel(event) {
@@ -3792,72 +3873,90 @@
         };
 
         // Populate drop-down list Surat pada menu input asessment (Step 4)
-        function initAssessSuratOptions() {
-            const dariSelect = document.getElementById('assess-surat-dari');
-            const sampaiSelect = document.getElementById('assess-surat-sampai');
-            
-            dariSelect.innerHTML = '<option value="">-- Pilih Surat --</option>';
-            sampaiSelect.innerHTML = '<option value="">-- Pilih Surat --</option>';
+        // Kumpulan sementara indeks surat (0-113, mengikuti urutan asli mushaf) yang ditandai sudah dihafal
+        // saat form Assessment sedang dibuka — mendukung hafalan tidak berurutan (mis. mulai dari Juz 30).
+        let currentHafalanSet = new Set();
 
-            listSurat.forEach((s, index) => {
-                const optDari = document.createElement('option');
-                optDari.value = index;
-                optDari.text = `${index + 1}. ${s.nama}`;
-                dariSelect.add(optDari);
-
-                const optSampai = document.createElement('option');
-                optSampai.value = index;
-                optSampai.text = `${index + 1}. ${s.nama}`;
-                sampaiSelect.add(optSampai);
-            });
+        // Mengambil daftar indeks surat yang sudah dihafal milik seorang siswa, dengan KOMPATIBILITAS
+        // untuk data lama (format rentang "Surat Dari" - "Surat Sampai") yang sudah terlanjur diisi
+        // sebelum fitur ini diperbarui menjadi berbasis Juz, agar data lama tetap tersambung otomatis.
+        function getHafalanSurahList(s) {
+            if (Array.isArray(s.hafalanSurahList)) return s.hafalanSurahList;
+            if (s.suratDariIndex !== undefined && s.suratDariIndex !== null && s.suratDariIndex !== '' &&
+                s.suratSampaiIndex !== undefined && s.suratSampaiIndex !== null && s.suratSampaiIndex !== '') {
+                const dari = parseInt(s.suratDariIndex);
+                const sampai = parseInt(s.suratSampaiIndex);
+                if (!isNaN(dari) && !isNaN(sampai) && dari <= sampai) {
+                    const list = [];
+                    for (let i = dari; i <= sampai; i++) list.push(i);
+                    return list;
+                }
+            }
+            return [];
         }
 
-        // Kalkulasi perhitungan Juz atau bagian dari Juz yang sedang dihafal secara otomatis
-        // Acuan: Al-Fatihah = Juz 1 (awal Al-Qur'an), An-Naba = Juz 30 (awal Juz 'Amma / Juz terakhir)
-        // sesuai pembagian Mushaf Standar Madinah (1 Juz rata-rata 20 halaman).
-        function hitungJuzOtomatis() {
-            const dariVal = document.getElementById('assess-surat-dari').value;
-            const sampaiVal = document.getElementById('assess-surat-sampai').value;
+        // Mengisi dropdown pilihan Juz (1-30) pada form Assessment
+        function initAssessSuratOptions() {
+            const juzSelect = document.getElementById('assess-pilih-juz');
+            juzSelect.innerHTML = '<option value="">-- Pilih Juz (1-30) --</option>';
+            for (let j = 1; j <= 30; j++) {
+                const opt = document.createElement('option');
+                opt.value = j;
+                opt.text = `Juz ${j}`;
+                juzSelect.add(opt);
+            }
+            document.getElementById('assess-surat-juz-list').classList.add('hidden');
+            document.getElementById('assess-surat-juz-list').innerHTML = '';
+        }
+
+        // Menampilkan daftar surat (dengan checklist) untuk Juz yang dipilih. Nomor surat yang ditampilkan
+        // tetap mengikuti urutan ASLI dalam mushaf (mis. An-Naba tetap tertulis "78." walau ia surat
+        // pertama pada Juz 30), sesuai field `juz` bawaan setiap surat pada listSurat.
+        function tampilkanSuratJuz() {
+            const juz = parseInt(document.getElementById('assess-pilih-juz').value);
+            const container = document.getElementById('assess-surat-juz-list');
+            if (!juz) { container.classList.add('hidden'); container.innerHTML = ''; return; }
+
+            const suratDiJuz = listSurat.map((surat, idx) => ({ ...surat, idx })).filter(surat => surat.juz === juz);
+            container.innerHTML = suratDiJuz.map(surat => `
+                <label class="flex items-center gap-2 text-xs cursor-pointer py-0.5">
+                    <input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 shrink-0" onchange="toggleSurahHafal(${surat.idx}, this.checked)" ${currentHafalanSet.has(surat.idx) ? 'checked' : ''}>
+                    <span>${surat.idx + 1}. ${surat.nama}</span>
+                </label>`).join('');
+            container.classList.remove('hidden');
+        }
+
+        // Menandai / membatalkan tanda satu surat sebagai sudah dihafal
+        function toggleSurahHafal(idx, checked) {
+            if (checked) currentHafalanSet.add(idx);
+            else currentHafalanSet.delete(idx);
+            updateEstimasiHafalanDisplay();
+        }
+
+        // Menghitung ulang total surat & estimasi capaian Juz berdasarkan seluruh surat yang sudah ditandai
+        // (lintas Juz manapun), memakai standar Mushaf Ustmani Madinah: 1 Juz = 20 halaman.
+        function updateEstimasiHafalanDisplay() {
+            const list = Array.from(currentHafalanSet);
+            document.getElementById('assess-total-surat-hafal').innerText = list.length;
+
             const outputText = document.getElementById('output-estimasi-juz');
-
-            if (dariVal === "" || sampaiVal === "") {
-                outputText.innerText = "0 Juz";
+            if (list.length === 0) {
+                outputText.innerText = '0 Juz / Bagian Juz';
                 return;
             }
 
-            const idxDari = parseInt(dariVal);
-            const idxSampai = parseInt(sampaiVal);
-
-            if (idxDari > idxSampai) {
-                outputText.innerText = "Error: Urutan surat terbalik";
-                return;
-            }
-
-            const juzDari = listSurat[idxDari].juz;     // Al-Fatihah -> 1
-            const juzSampai = listSurat[idxSampai].juz; // An-Naba -> 30
-
-            // Menghitung estimasi total halaman dari rentang surat pilihan
             let totalHalaman = 0;
-            for (let i = idxDari; i <= idxSampai; i++) {
-                totalHalaman += listSurat[i].hal;
-            }
-
-            // Standar Mushaf Ustmani Madinah: 1 Juz = 20 halaman, 604 halaman = 30 Juz
+            list.forEach(i => totalHalaman += listSurat[i].hal);
             const hitungJuz = totalHalaman / 20;
+            const juzTercakup = [...new Set(list.map(i => listSurat[i].juz))].sort((a, b) => a - b);
 
-            if (juzDari === juzSampai) {
-                // Rentang hafalan masih berada di dalam 1 Juz yang sama
-                if (hitungJuz >= 1) {
-                    outputText.innerText = `Khatam Juz ${juzDari}`;
-                } else {
-                    const persentaseJuz = (hitungJuz * 100).toFixed(0);
-                    outputText.innerText = `${persentaseJuz}% dari Juz ${juzDari}`;
-                }
-            } else if (hitungJuz >= 30) {
-                outputText.innerText = "Khatam (30 Juz)";
+            if (hitungJuz >= 30) {
+                outputText.innerText = 'Khatam (30 Juz)';
+            } else if (juzTercakup.length === 1) {
+                outputText.innerText = `${(hitungJuz * 100).toFixed(0)}% dari Juz ${juzTercakup[0]}`;
             } else {
-                // Tampilkan estimasi jumlah Juz sekaligus rentang Juz cakupannya
-                outputText.innerText = `≈ ${hitungJuz.toFixed(1)} Juz (Juz ${juzDari} s.d Juz ${juzSampai})`;
+                const label = juzTercakup.length <= 4 ? ` (Juz ${juzTercakup.join(', ')})` : '';
+                outputText.innerText = `≈ ${hitungJuz.toFixed(1)} Juz${label}`;
             }
         }
 
@@ -3881,8 +3980,9 @@
             
             currentStep = 1; 
             showStep(currentStep);
-            initAssessSuratOptions(); // Load list surat
-            document.getElementById('output-estimasi-juz').innerText = '0 Juz / Bagian Juz';
+            currentHafalanSet = new Set(); // kosongkan tanda hafalan untuk siswa baru
+            initAssessSuratOptions(); // Load pilihan Juz
+            updateEstimasiHafalanDisplay();
         }
 
         // Membuka modal dalam mode edit, mengisi ulang SELURUH data siswa yang sudah tersimpan
@@ -3937,10 +4037,9 @@
             showStep(currentStep);
             initAssessSuratOptions();
 
-            // Step 4 (diisi setelah opsi surat selesai dimuat)
-            setVal('assess-surat-dari', s.suratDariIndex ?? '');
-            setVal('assess-surat-sampai', s.suratSampaiIndex ?? '');
-            if (s.suratDariIndex !== undefined && s.suratSampaiIndex !== undefined) hitungJuzOtomatis();
+            // Step 4: muat kembali tanda hafalan (mendukung data lama format rentang via getHafalanSurahList)
+            currentHafalanSet = new Set(getHafalanSurahList(s));
+            updateEstimasiHafalanDisplay();
             setVal('assess-status-edukasi', s.statusEdukasi || 'Belum');
             setVal('assess-bacaan-quran', s.bacaanQuran || 'Al-Quran (Lancar)');
             toggleJenjangHafalan();
@@ -3973,12 +4072,18 @@
             // Manage Tab Indicators
             for (let i = 1; i <= 4; i++) {
                 const tab = document.getElementById(`tab-${i}`);
-                if (i === step) tab.className = "flex-1 pb-3 text-center text-xs font-bold border-b-2 border-custom-orange text-custom-orange";
-                else tab.className = "flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400";
+                if (i === step) tab.className = "flex-1 pb-3 text-center text-xs font-bold border-b-2 border-custom-orange text-custom-orange hover:bg-slate-100/60 transition rounded-t-lg";
+                else tab.className = "flex-1 pb-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:bg-slate-100/60 transition rounded-t-lg";
             }
             
             document.getElementById('btnPrev').classList.toggle('invisible', step === 1);
             document.getElementById('btnNext').innerText = step === 4 ? (editingSiswaDocId ? 'Simpan Perubahan' : 'Simpan Data') : 'Lanjut';
+        }
+
+        // Berpindah langsung ke tab manapun (1-4) dengan mengklik label tab, tanpa harus klik "Lanjut" berurutan
+        function gotoStep(step) {
+            currentStep = step;
+            showStep(step);
         }
 
         async function changeStep(n) {
@@ -4053,8 +4158,7 @@
                         statusRumah: getVal('in-status-rumah'),
                         aktivitasSosialOrtu: getVal('in-aktivitas-sosial-ortu'),
 
-                        suratDariIndex: getVal('assess-surat-dari') || null,
-                        suratSampaiIndex: getVal('assess-surat-sampai') || null,
+                        hafalanSurahList: Array.from(currentHafalanSet),
                         estimasiHafalan: document.getElementById('output-estimasi-juz')?.innerText || '',
                         statusEdukasi: getVal('assess-status-edukasi') || 'Belum',
                         bacaanQuran: getVal('assess-bacaan-quran') || 'Al-Quran (Lancar)',
@@ -4159,12 +4263,10 @@
             const grid = document.getElementById('hafalanGridDetail');
             if (!grid) return;
 
-            const idxDari = (s.suratDariIndex !== undefined && s.suratDariIndex !== null && s.suratDariIndex !== '') ? parseInt(s.suratDariIndex) : null;
-            const idxSampai = (s.suratSampaiIndex !== undefined && s.suratSampaiIndex !== null && s.suratSampaiIndex !== '') ? parseInt(s.suratSampaiIndex) : null;
-            const adaData = idxDari !== null && idxSampai !== null && !isNaN(idxDari) && !isNaN(idxSampai);
+            const hafalSet = new Set(getHafalanSurahList(s));
 
             grid.innerHTML = listSurat.map((surat, i) => {
-                const sudahHafal = adaData && i >= idxDari && i <= idxSampai;
+                const sudahHafal = hafalSet.has(i);
                 return `
                     <div class="flex items-center gap-1.5 text-[10px] py-0.5" title="${i + 1}. ${surat.nama}${sudahHafal ? ' — Sudah dihafal' : ' — Belum dihafal'}">
                         <span class="w-3.5 h-3.5 rounded-sm border shrink-0 flex items-center justify-center ${sudahHafal ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300'}">
