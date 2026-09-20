@@ -326,9 +326,9 @@
                         <p id="dash-greeting" class="text-xs font-semibold text-emerald-100 uppercase tracking-wider mb-1">Selamat Datang</p>
                         <h2 class="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
                             <i class="fa-solid fa-hand-holding-heart"></i>
-                            Dashboard Monitoring Beasiswa DKM AHM - Rumah Zakat
+                            Dashboard Monitoring Beasiswa Rumah Zakat
                         </h2>
-                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan perkembangan penerima manfaat & dampak program beasiswa.</p>
+                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa, tersinkron real-time.</p>
                     </div>
                 </div>
 
@@ -365,97 +365,104 @@
                     </div>
                 </div>
 
-                <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang (kanan) -->
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang + Wilayah Pembinaan (kanan, ditumpuk sejajar) -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <!-- Top 10 Hafalan Terbanyak -->
-                    <div class="panel-amber p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Top 10 Hafalan Terbanyak</h3>
-                        <div id="top-hafalan-list" class="space-y-3.5">
+                    <div class="panel-amber p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Top 10 Hafalan Terbanyak</h3>
+                        <div id="top-hafalan-list" class="space-y-2.5">
                             <!-- Data terisi otomatis melalui javascript -->
                         </div>
                     </div>
 
-                    <!-- Berdasarkan Gender -->
-                    <div class="panel-blue p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Penerima Berdasarkan Gender & Jenjang</h3>
-                            <div class="flex items-center justify-around mb-6 bg-slate-50 p-4 rounded-xl">
+                    <!-- Kanan: Gender & Jenjang (diperkecil) + Jumlah Anak per Wilayah, ditumpuk agar sejajar dengan Top 10 Hafalan -->
+                    <div class="flex flex-col gap-4">
+                        <!-- Berdasarkan Gender & Jenjang -->
+                        <div class="panel-blue p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5">Penerima Berdasarkan Gender & Jenjang</h3>
+                            <div class="flex items-center justify-around mb-3 bg-slate-50 p-2.5 rounded-xl">
                                 <div class="text-center">
-                                    <i class="fa-solid fa-user-tie text-3xl text-blue-500 mb-1"></i>
-                                    <p id="dash-gender-lk" class="text-sm font-bold text-slate-800">0%</p>
-                                    <span class="text-[10px] text-slate-400">Laki-laki</span>
+                                    <i class="fa-solid fa-user-tie text-lg text-blue-500 mb-0.5"></i>
+                                    <p id="dash-gender-lk" class="text-[11px] font-bold text-slate-800">0%</p>
+                                    <span class="text-[8px] text-slate-400">Laki-laki</span>
                                 </div>
-                                <div class="w-16 h-16 flex items-center justify-center">
-                                    <div class="w-full h-full rounded-full border-8 border-custom-orange border-l-blue-500 animate-pulse"></div>
+                                <div class="w-9 h-9 flex items-center justify-center">
+                                    <div class="w-full h-full rounded-full border-4 border-custom-orange border-l-blue-500 animate-pulse"></div>
                                 </div>
                                 <div class="text-center">
-                                    <i class="fa-solid fa-user-graduate text-3xl text-rose-400 mb-1"></i>
-                                    <p id="dash-gender-pr" class="text-sm font-bold text-slate-800">0%</p>
-                                    <span class="text-[10px] text-slate-400">Perempuan</span>
+                                    <i class="fa-solid fa-user-graduate text-lg text-rose-400 mb-0.5"></i>
+                                    <p id="dash-gender-pr" class="text-[11px] font-bold text-slate-800">0%</p>
+                                    <span class="text-[8px] text-slate-400">Perempuan</span>
                                 </div>
                             </div>
-                            <div class="space-y-3 text-xs" id="dash-jenjang-breakdown">
+                            <div class="space-y-1.5 text-[10px]" id="dash-jenjang-breakdown">
                                 <!-- Data terisi otomatis melalui javascript: renderDashboardSummary() -->
                             </div>
+                        </div>
+
+                        <!-- Jumlah Anak Berdasarkan Wilayah Pembinaan (baru) -->
+                        <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex-1 flex flex-col">
+                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Jumlah Anak Berdasarkan Wilayah Pembinaan</h3>
+                            <div class="relative flex-1" style="min-height: 100px;"><canvas id="wilayahChart"></canvas></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Row 2: Kehadiran Pembinaan (kiri) & Edukasi Rutin (kanan) -->
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <!-- Kehadiran Pembinaan Berdasarkan Kota -->
-                    <div class="panel-teal p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                            <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
-                            <div class="flex items-center gap-2 text-xs">
+                    <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
+                            <div class="flex items-center gap-1.5 text-[10px]">
                                 <span class="font-semibold text-slate-500 whitespace-nowrap">Periode:</span>
-                                <select id="kehadiran-bulan-dari" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
+                                <select id="kehadiran-bulan-dari" class="border border-slate-200 rounded-lg px-1.5 py-1 text-[10px] font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
                                 <span class="text-slate-400">s/d</span>
-                                <select id="kehadiran-bulan-sampai" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
-                                <button onclick="renderKehadiranChart()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition shrink-0">
+                                <select id="kehadiran-bulan-sampai" class="border border-slate-200 rounded-lg px-1.5 py-1 text-[10px] font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
+                                <button onclick="renderKehadiranChart()" class="bg-custom-orange hover:bg-emerald-700 text-white font-bold px-2 py-1 rounded-lg text-[10px] shadow-sm transition shrink-0">
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="relative h-72"><canvas id="kehadiranPembinaanChart"></canvas></div>
+                        <div class="relative h-56"><canvas id="kehadiranPembinaanChart"></canvas></div>
                     </div>
 
                     <!-- Edukasi Rutin -->
-                    <div class="panel-purple p-5 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
-                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Edukasi Rutin</h3>
-                        <div class="relative flex-1 flex items-center justify-center h-72"><canvas id="edukasiRutinChart"></canvas></div>
+                    <div class="panel-purple p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
+                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Edukasi Rutin</h3>
+                        <div class="relative flex-1 flex items-center justify-center h-56"><canvas id="edukasiRutinChart"></canvas></div>
                     </div>
                 </div>
 
                 <!-- Row 3: Dampak Sosial & Outcome Alumni -->
-                <div class="grid grid-cols-1 gap-6">
+                <div class="grid grid-cols-1 gap-4">
                     <!-- Dampak Sosial -->
-                    <div class="panel-rose p-5 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">Dampak Sosial & Outcome Alumni</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-indigo-600 text-white rounded-lg"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="panel-rose p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Dampak Sosial & Outcome Alumni</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="flex items-center justify-between p-2.5 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                <div class="flex items-center space-x-2">
+                                    <div class="p-1.5 bg-indigo-600 text-white rounded-lg text-xs"><i class="fa-solid fa-graduation-cap"></i></div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-800">Alumni Lulus</p>
-                                        <p class="text-[10px] text-slate-400">Status Beasiswa: Lulus</p>
+                                        <p class="text-[10px] font-bold text-slate-800">Alumni Lulus</p>
+                                        <p class="text-[8px] text-slate-400">Status Beasiswa: Lulus</p>
                                     </div>
                                 </div>
-                                <span id="dash-lulus-detail" class="text-sm font-black text-indigo-700">0 (0%)</span>
+                                <span id="dash-lulus-detail" class="text-[11px] font-black text-indigo-700">0 (0%)</span>
                             </div>
-                            <div class="flex items-center justify-between p-3 bg-rose-50/50 rounded-xl border border-rose-100">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-rose-600 text-white rounded-lg"><i class="fa-solid fa-circle-pause"></i></div>
+                            <div class="flex items-center justify-between p-2.5 bg-rose-50/50 rounded-xl border border-rose-100">
+                                <div class="flex items-center space-x-2">
+                                    <div class="p-1.5 bg-rose-600 text-white rounded-lg text-xs"><i class="fa-solid fa-circle-pause"></i></div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-800">Beasiswa Dihentikan</p>
-                                        <p class="text-[10px] text-slate-400">Status Beasiswa: Dihentikan</p>
+                                        <p class="text-[10px] font-bold text-slate-800">Beasiswa Dihentikan</p>
+                                        <p class="text-[8px] text-slate-400">Status Beasiswa: Dihentikan</p>
                                     </div>
                                 </div>
-                                <span id="dash-dihentikan-detail" class="text-sm font-black text-rose-700">0 (0%)</span>
+                                <span id="dash-dihentikan-detail" class="text-[11px] font-black text-rose-700">0 (0%)</span>
                             </div>
                         </div>
-                        <div class="pt-4 text-xs">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Pekerjaan Utama Orang Tua</span>
+                        <div class="pt-3 text-[10px]">
+                            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Pekerjaan Utama Orang Tua</span>
                             <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-center" id="dash-pekerjaan-ortu-breakdown">
                                 <!-- Data terisi otomatis melalui javascript: renderDashboardSummary() -->
                             </div>
@@ -1849,7 +1856,7 @@
                 if (currentView === 'perkembangan-anak') generatePerkembanganTables();
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
                 if (currentView === 'alumni') renderAlumniList();
-                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderDashboardSummary(); }
+                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderWilayahChart(); renderDashboardSummary(); }
 
                 if (pendingStudentIdFromUrl) {
                     viewStudentDetail(pendingStudentIdFromUrl);
@@ -2067,6 +2074,7 @@
                 renderKehadiranChart();
                 renderTopHafalan();
                 renderEdukasiRutinChart();
+                renderWilayahChart();
                 renderDashboardSummary();
                 dashboardChartsInitialized = true;
             }
@@ -2197,6 +2205,55 @@
         // Daftar bulan untuk filter periode grafik Kehadiran Pembinaan
         const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         let kehadiranChartInstance = null;
+        let wilayahChartInstance = null;
+
+        // Palet warna ceria bernuansa anak-anak untuk kotak penanda (legend) & batang grafik
+        const PALET_CERIA = ['#fb7185', '#38bdf8', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#2dd4bf', '#f472b6'];
+
+        // Render grafik batang Jumlah Anak Berdasarkan Wilayah Pembinaan, tiap batang diberi warna ceria berbeda
+        function renderWilayahChart() {
+            const canvas = document.getElementById('wilayahChart');
+            if (!canvas) return;
+
+            const visible = getVisibleSiswa();
+            if (wilayahChartInstance) { wilayahChartInstance.destroy(); wilayahChartInstance = null; }
+
+            if (visible.length === 0) {
+                tampilkanCanvasKosong(canvas, 'Data dalam proses identifikasi — belum ada data siswa.');
+                return;
+            }
+
+            const counts = {};
+            visible.forEach(s => {
+                const key = s.wilayah || 'Tanpa Wilayah';
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            const labels = Object.keys(counts).sort();
+            const data = labels.map(k => counts[k]);
+
+            wilayahChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Jumlah Anak',
+                        data,
+                        backgroundColor: labels.map((_, i) => PALET_CERIA[i % PALET_CERIA.length]),
+                        borderRadius: 6,
+                        maxBarThickness: 28
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { font: { size: 8 } }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 } }
+                    }
+                }
+            });
+        }
 
         // Isi dropdown periode bulan (Dari / Sampai) untuk grafik kehadiran
         function populateKehadiranBulanOptions() {
@@ -2266,17 +2323,17 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Hadir', data: dataHadir, backgroundColor: '#10b981', borderRadius: 6 },
-                        { label: 'Tidak Hadir', data: dataTidakHadir, backgroundColor: '#f43f5e', borderRadius: 6 }
+                        { label: 'Hadir', data: dataHadir, backgroundColor: '#4ade80', borderRadius: 8, maxBarThickness: 22 },
+                        { label: 'Tidak Hadir', data: dataTidakHadir, backgroundColor: '#fb7185', borderRadius: 8, maxBarThickness: 22 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } },
                     scales: {
-                        x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 } }
+                        x: { ticks: { font: { size: 8 } }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 } }
                     }
                 }
             });
@@ -2316,18 +2373,18 @@
                 const persen = (item.juz / maxJuz) * 100;
                 const labelDiLuar = persen < 25; // jika bar terlalu pendek, taruh label di luar agar tetap terbaca
                 const row = document.createElement('div');
-                row.className = 'flex items-center gap-2';
+                row.className = 'flex items-center gap-1.5';
                 row.innerHTML = `
-                    <span class="text-[10px] font-bold text-slate-400 w-4 text-right">${idx + 1}</span>
-                    <a href="javascript:void(0)" onclick="bukaDetailSiswaTabBaru('${item.docId}')" class="text-[11px] font-semibold text-custom-orange hover:underline hover:text-emerald-700 w-24 truncate cursor-pointer" title="${item.nama} — klik untuk buka profil di tab baru">${item.nama}</a>
-                    <div class="flex-1 flex items-center gap-2">
-                        <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-visible">
-                            <div class="bg-gradient-to-r from-custom-orange to-emerald-400 h-full rounded-full flex items-center justify-end pr-2" style="width: ${persen}%">
-                                ${!labelDiLuar ? `<span class="text-[9px] font-bold text-white whitespace-nowrap">${item.juz.toFixed(1)} Juz</span>` : ''}
+                    <span class="text-[8px] font-bold text-slate-400 w-3 text-right">${idx + 1}</span>
+                    <a href="javascript:void(0)" onclick="bukaDetailSiswaTabBaru('${item.docId}')" class="text-[9px] font-semibold text-custom-orange hover:underline hover:text-emerald-700 w-20 truncate cursor-pointer" title="${item.nama} — klik untuk buka profil di tab baru">${item.nama}</a>
+                    <div class="flex-1 flex items-center gap-1.5">
+                        <div class="flex-1 bg-slate-100 rounded-full h-3 relative overflow-visible">
+                            <div class="bg-gradient-to-r from-custom-orange to-emerald-400 h-full rounded-full flex items-center justify-end pr-1.5" style="width: ${persen}%">
+                                ${!labelDiLuar ? `<span class="text-[7px] font-bold text-white whitespace-nowrap">${item.juz.toFixed(1)} Juz</span>` : ''}
                             </div>
-                            ${labelDiLuar ? `<span class="absolute top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-600 whitespace-nowrap" style="left: calc(${persen}% + 6px);">${item.juz.toFixed(1)} Juz</span>` : ''}
+                            ${labelDiLuar ? `<span class="absolute top-1/2 -translate-y-1/2 text-[7px] font-bold text-slate-600 whitespace-nowrap" style="left: calc(${persen}% + 6px);">${item.juz.toFixed(1)} Juz</span>` : ''}
                         </div>
-                        <div class="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-md shrink-0">
+                        <div class="w-5 h-5 rounded-full overflow-hidden border-2 border-white shadow-md shrink-0">
                             <img src="${item.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100'}" class="w-full h-full object-cover" alt="${item.nama}">
                         </div>
                     </div>
@@ -2377,8 +2434,8 @@
                     const persen = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
                     return `
                         <div>
-                            <div class="flex justify-between font-bold text-slate-700 mb-1"><span>${j.label}</span><span>${count} Siswa</span></div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full"><div class="${j.color} h-full rounded-full" style="width: ${persen}%"></div></div>
+                            <div class="flex justify-between font-bold text-slate-700 mb-0.5"><span>${j.label}</span><span>${count} Siswa</span></div>
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full"><div class="${j.color} h-full rounded-full" style="width: ${persen}%"></div></div>
                         </div>`;
                 }).join('');
             }
@@ -2461,15 +2518,15 @@
                     labels: ['Sudah', 'Belum'],
                     datasets: [{
                         data: [sudah, belum],
-                        backgroundColor: ['#10b981', '#f43f5e'],
+                        backgroundColor: ['#4ade80', '#fb7185'],
                         borderColor: '#ffffff',
-                        borderWidth: 2
+                        borderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } }
                 }
             });
         }
@@ -2998,6 +3055,7 @@
                 renderKehadiranChart();
                 renderTopHafalan();
                 renderEdukasiRutinChart();
+                renderWilayahChart();
                 renderDashboardSummary();
                 setDashboardGreeting();
                 dashboardChartsInitialized = true;
