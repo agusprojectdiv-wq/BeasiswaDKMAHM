@@ -374,11 +374,11 @@
                     </div>
                 </div>
 
-                <!-- Row 1: Top 10 Hafalan (kiri) & Gender + Wilayah (kanan atas) + Jenjang (kanan bawah, memanjang) -->
+                <!-- Row 1: Top 15 Hafalan (kiri) & Gender + Wilayah (kanan atas) + Jenjang (kanan bawah, memanjang) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                    <!-- Top 10 Hafalan Terbanyak -->
+                    <!-- Top 15 Hafalan Terbanyak -->
                     <div class="panel-amber p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Top 10 Hafalan Terbanyak</h3>
+                        <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-3">Top 15 Hafalan Terbanyak</h3>
                         <div id="top-hafalan-list" class="space-y-2.5">
                             <!-- Data terisi otomatis melalui javascript -->
                         </div>
@@ -389,20 +389,20 @@
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Berdasarkan Gender -->
                             <div class="panel-blue p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
-                                <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Gender</h3>
+                                <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">Berdasarkan Gender</h3>
                                 <div class="relative flex-1" style="min-height: 100px;"><canvas id="genderChart"></canvas></div>
                             </div>
 
                             <!-- Jumlah Anak Berdasarkan Wilayah Pembinaan -->
                             <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
-                                <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Wilayah</h3>
+                                <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">Berdasarkan Wilayah</h3>
                                 <div class="relative flex-1" style="min-height: 100px;"><canvas id="wilayahChart"></canvas></div>
                             </div>
                         </div>
 
                         <!-- Berdasarkan Jenjang Pendidikan (memanjang di bawah Gender & Wilayah) -->
                         <div class="panel-indigo p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex-1 flex flex-col">
-                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Jenjang Pendidikan</h3>
+                            <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">Berdasarkan Jenjang Pendidikan</h3>
                             <div class="relative flex-1" style="min-height: 90px;"><canvas id="jenjangChart"></canvas></div>
                         </div>
                     </div>
@@ -413,7 +413,7 @@
                     <!-- Kehadiran Pembinaan Berdasarkan Kota -->
                     <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
-                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
+                            <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Kehadiran Pembinaan Berdasarkan Kota</h3>
                             <div class="flex items-center gap-1.5 text-[10px]">
                                 <span class="font-semibold text-slate-500 whitespace-nowrap">Periode:</span>
                                 <select id="kehadiran-bulan-dari" class="border border-slate-200 rounded-lg px-1.5 py-1 text-[10px] font-semibold focus:outline-none focus:border-custom-orange bg-white"></select>
@@ -429,7 +429,7 @@
 
                     <!-- Edukasi Rutin -->
                     <div class="panel-purple p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
-                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Edukasi Rutin</h3>
+                        <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-3">Edukasi Rutin</h3>
                         <div class="relative flex-1 flex items-center justify-center h-56"><canvas id="edukasiRutinChart"></canvas></div>
                     </div>
                 </div>
@@ -438,7 +438,7 @@
                 <div class="grid grid-cols-1 gap-4">
                     <!-- Dampak Sosial -->
                     <div class="panel-rose p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-3">Dampak Sosial & Outcome Alumni</h3>
+                        <h3 class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-3">Dampak Sosial & Outcome Alumni</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div class="flex items-center justify-between p-2.5 bg-indigo-50/50 rounded-xl border border-indigo-100">
                                 <div class="flex items-center space-x-2">
@@ -2317,8 +2317,13 @@
                     plugins: {
                         legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
                         datalabels: {
-                            display: true, color: '#fff', font: { size: 9, weight: 'bold' },
-                            formatter: v => v > 0 ? v : ''
+                            display: true, color: '#fff', font: { size: 8, weight: 'bold' },
+                            formatter: (v, context) => {
+                                if (v <= 0) return '';
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const persen = total > 0 ? ((v / total) * 100).toFixed(0) : 0;
+                                return `${v} (${persen}%)`;
+                            }
                         }
                     }
                 }
@@ -2482,7 +2487,7 @@
             return totalHalaman / 20;
         }
 
-        // Render daftar Top 10 Hafalan Terbanyak berdasarkan hasil Assessment (Step 4) tiap siswa,
+        // Render daftar Top 15 Hafalan Terbanyak berdasarkan hasil Assessment (Step 4) tiap siswa,
         // sebagai diagram batang horizontal dengan foto bulat di ujung
         function renderTopHafalan() {
             const container = document.getElementById('top-hafalan-list');
@@ -2498,7 +2503,7 @@
                 return;
             }
 
-            const sorted = sourceData.sort((a, b) => b.juz - a.juz).slice(0, 10);
+            const sorted = sourceData.sort((a, b) => b.juz - a.juz).slice(0, 15);
             const maxJuz = sorted[0].juz;
 
             sorted.forEach((item, idx) => {
@@ -2637,8 +2642,13 @@
                     plugins: {
                         legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
                         datalabels: {
-                            display: true, color: '#fff', font: { size: 9, weight: 'bold' },
-                            formatter: v => v > 0 ? v : ''
+                            display: true, color: '#fff', font: { size: 8, weight: 'bold' },
+                            formatter: (v, context) => {
+                                if (v <= 0) return '';
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const persen = total > 0 ? ((v / total) * 100).toFixed(0) : 0;
+                                return `${v} (${persen}%)`;
+                            }
                         }
                     }
                 }
@@ -3634,7 +3644,7 @@
 
         // Membuka halaman Detail Profil Anak Yatim Juara untuk siswa manapun (docId), terlepas dari
         // kelengkapan data di menu Data Siswa / Perkembangan lainnya — selalu bisa dibuka.
-        // Membuka Detail Profil Anak Yatim Juara di tab baru (dipakai dari daftar Top 10 Hafalan Dashboard)
+        // Membuka Detail Profil Anak Yatim Juara di tab baru (dipakai dari daftar Top 15 Hafalan Dashboard)
         function bukaDetailSiswaTabBaru(docId) {
             if (!docId) return;
             const url = `${window.location.pathname}?studentId=${encodeURIComponent(docId)}`;
@@ -4022,7 +4032,7 @@
         }
 
         // Menyimpan permintaan buka detail siswa dari URL (?studentId=...), dipakai saat tab baru dibuka
-        // dari daftar Top 10 Hafalan Dashboard — dieksekusi begitu data siswa selesai dimuat.
+        // dari daftar Top 15 Hafalan Dashboard — dieksekusi begitu data siswa selesai dimuat.
         let pendingStudentIdFromUrl = null;
 
         window.onload = function() {
