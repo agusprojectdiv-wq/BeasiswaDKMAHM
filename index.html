@@ -28,6 +28,8 @@
     </script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin angka pada grafik (data labels) agar tiap batang/pie langsung menampilkan nilainya -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <!-- SheetJS (xlsx) CDN for Export Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- ExcelJS: khusus untuk membuat Template Excel dengan dropdown validasi asli (SheetJS versi gratis tidak mendukung ini) -->
@@ -66,16 +68,23 @@
         }
 
         /* ===== Panel warna lembut untuk kotak/kartu (nuansa berwarna namun tetap elegan) ===== */
-        .panel-slate   { background: linear-gradient(150deg, #f8fafc 0%, #ffffff 65%); }
-        .panel-emerald { background: linear-gradient(150deg, #ecfdf5 0%, #ffffff 65%); }
-        .panel-blue    { background: linear-gradient(150deg, #eff6ff 0%, #ffffff 65%); }
-        .panel-indigo  { background: linear-gradient(150deg, #eef2ff 0%, #ffffff 65%); }
-        .panel-purple  { background: linear-gradient(150deg, #f5f3ff 0%, #ffffff 65%); }
-        .panel-amber   { background: linear-gradient(150deg, #fffbeb 0%, #ffffff 65%); }
-        .panel-rose    { background: linear-gradient(150deg, #fff1f2 0%, #ffffff 65%); }
-        .panel-teal    { background: linear-gradient(150deg, #f0fdfa 0%, #ffffff 65%); }
-        .panel-cyan    { background: linear-gradient(150deg, #ecfeff 0%, #ffffff 65%); }
-        .panel-pink    { background: linear-gradient(150deg, #fdf2f8 0%, #ffffff 65%); }
+        /* Kartu/kotak grafik diberi gradasi lebih terlihat + highlight tipis di atas & bayangan warna senada
+           di bawah, supaya terkesan timbul/3D (bukan sekadar pastel datar). */
+        .panel-slate, .panel-emerald, .panel-blue, .panel-indigo, .panel-purple,
+        .panel-amber, .panel-rose, .panel-teal, .panel-cyan, .panel-pink {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 6px 14px -6px var(--panel-shadow-color, rgba(100,116,139,0.25));
+            border-top: 1px solid rgba(255,255,255,0.9);
+        }
+        .panel-slate   { background: linear-gradient(160deg, #f1f5f9 0%, #ffffff 60%); --panel-shadow-color: rgba(100,116,139,0.22); }
+        .panel-emerald { background: linear-gradient(160deg, #a7f3d0 0%, #ffffff 60%); --panel-shadow-color: rgba(16,185,129,0.28); }
+        .panel-blue    { background: linear-gradient(160deg, #bfdbfe 0%, #ffffff 60%); --panel-shadow-color: rgba(59,130,246,0.28); }
+        .panel-indigo  { background: linear-gradient(160deg, #c7d2fe 0%, #ffffff 60%); --panel-shadow-color: rgba(99,102,241,0.28); }
+        .panel-purple  { background: linear-gradient(160deg, #ddd6fe 0%, #ffffff 60%); --panel-shadow-color: rgba(147,51,234,0.28); }
+        .panel-amber   { background: linear-gradient(160deg, #fde68a 0%, #ffffff 60%); --panel-shadow-color: rgba(217,119,6,0.28); }
+        .panel-rose    { background: linear-gradient(160deg, #fecdd3 0%, #ffffff 60%); --panel-shadow-color: rgba(225,29,72,0.28); }
+        .panel-teal    { background: linear-gradient(160deg, #99f6e4 0%, #ffffff 60%); --panel-shadow-color: rgba(13,148,136,0.28); }
+        .panel-cyan    { background: linear-gradient(160deg, #a5f3fc 0%, #ffffff 60%); --panel-shadow-color: rgba(8,145,178,0.28); }
+        .panel-pink    { background: linear-gradient(160deg, #fbcfe8 0%, #ffffff 60%); --panel-shadow-color: rgba(219,39,119,0.28); }
         .progress-ring__circle {
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
@@ -365,7 +374,7 @@
                     </div>
                 </div>
 
-                <!-- Row 1: Top 10 Hafalan (kiri) & Gender/Jenjang + Wilayah Pembinaan (kanan, ditumpuk sejajar) -->
+                <!-- Row 1: Top 10 Hafalan (kiri) & Gender + Wilayah (kanan atas) + Jenjang (kanan bawah, memanjang) -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <!-- Top 10 Hafalan Terbanyak -->
                     <div class="panel-amber p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
@@ -375,35 +384,26 @@
                         </div>
                     </div>
 
-                    <!-- Kanan: Gender & Jenjang (diperkecil) + Jumlah Anak per Wilayah, ditumpuk agar sejajar dengan Top 10 Hafalan -->
+                    <!-- Kanan: Gender & Wilayah bersebelahan, Jenjang di bawahnya memanjang -->
                     <div class="flex flex-col gap-4">
-                        <!-- Berdasarkan Gender & Jenjang -->
-                        <div class="panel-blue p-4 rounded-2xl border border-slate-200 shadow-sm card-hover">
-                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5">Penerima Berdasarkan Gender & Jenjang</h3>
-                            <div class="flex items-center justify-around mb-3 bg-slate-50 p-2.5 rounded-xl">
-                                <div class="text-center">
-                                    <i class="fa-solid fa-user-tie text-lg text-blue-500 mb-0.5"></i>
-                                    <p id="dash-gender-lk" class="text-[11px] font-bold text-slate-800">0%</p>
-                                    <span class="text-[8px] text-slate-400">Laki-laki</span>
-                                </div>
-                                <div class="w-9 h-9 flex items-center justify-center">
-                                    <div class="w-full h-full rounded-full border-4 border-custom-orange border-l-blue-500 animate-pulse"></div>
-                                </div>
-                                <div class="text-center">
-                                    <i class="fa-solid fa-user-graduate text-lg text-rose-400 mb-0.5"></i>
-                                    <p id="dash-gender-pr" class="text-[11px] font-bold text-slate-800">0%</p>
-                                    <span class="text-[8px] text-slate-400">Perempuan</span>
-                                </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Berdasarkan Gender -->
+                            <div class="panel-blue p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
+                                <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Gender</h3>
+                                <div class="relative flex-1" style="min-height: 100px;"><canvas id="genderChart"></canvas></div>
                             </div>
-                            <div class="space-y-1.5 text-[10px]" id="dash-jenjang-breakdown">
-                                <!-- Data terisi otomatis melalui javascript: renderDashboardSummary() -->
+
+                            <!-- Jumlah Anak Berdasarkan Wilayah Pembinaan -->
+                            <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex flex-col">
+                                <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Wilayah</h3>
+                                <div class="relative flex-1" style="min-height: 100px;"><canvas id="wilayahChart"></canvas></div>
                             </div>
                         </div>
 
-                        <!-- Jumlah Anak Berdasarkan Wilayah Pembinaan (baru) -->
-                        <div class="panel-teal p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex-1 flex flex-col">
-                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Jumlah Anak Berdasarkan Wilayah Pembinaan</h3>
-                            <div class="relative flex-1" style="min-height: 100px;"><canvas id="wilayahChart"></canvas></div>
+                        <!-- Berdasarkan Jenjang Pendidikan (memanjang di bawah Gender & Wilayah) -->
+                        <div class="panel-indigo p-4 rounded-2xl border border-slate-200 shadow-sm card-hover flex-1 flex flex-col">
+                            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Berdasarkan Jenjang Pendidikan</h3>
+                            <div class="relative flex-1" style="min-height: 90px;"><canvas id="jenjangChart"></canvas></div>
                         </div>
                     </div>
                 </div>
@@ -1719,6 +1719,13 @@
             }, duration);
         }
 
+        // Plugin angka pada grafik didaftarkan sekali, namun default NONAKTIF secara global
+        // (baru diaktifkan per-grafik lewat opsi plugins.datalabels agar tidak mengganggu grafik lain)
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+            Chart.defaults.set('plugins.datalabels', { display: false });
+        }
+
         let currentView = 'dashboard';
         let chartsInitialized = false;
         let dashboardChartsInitialized = false;
@@ -1856,7 +1863,7 @@
                 if (currentView === 'perkembangan-anak') generatePerkembanganTables();
                 if (currentView === 'perkembangan-ortu') generatePerkembanganOrtuTables();
                 if (currentView === 'alumni') renderAlumniList();
-                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderWilayahChart(); renderDashboardSummary(); }
+                if (currentView === 'dashboard' && dashboardChartsInitialized) { renderEdukasiRutinChart(); renderTopHafalan(); renderWilayahChart(); renderGenderChart(); renderJenjangChart(); renderDashboardSummary(); }
 
                 if (pendingStudentIdFromUrl) {
                     viewStudentDetail(pendingStudentIdFromUrl);
@@ -2075,6 +2082,8 @@
                 renderTopHafalan();
                 renderEdukasiRutinChart();
                 renderWilayahChart();
+                renderGenderChart();
+                renderJenjangChart();
                 renderDashboardSummary();
                 dashboardChartsInitialized = true;
             }
@@ -2206,11 +2215,21 @@
         const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         let kehadiranChartInstance = null;
         let wilayahChartInstance = null;
+        let genderChartInstance = null;
+        let jenjangChartInstance = null;
 
         // Palet warna ceria bernuansa anak-anak untuk kotak penanda (legend) & batang grafik
         const PALET_CERIA = ['#fb7185', '#38bdf8', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#2dd4bf', '#f472b6'];
 
-        // Render grafik batang Jumlah Anak Berdasarkan Wilayah Pembinaan, tiap batang diberi warna ceria berbeda
+        // Membuat gradasi warna vertikal (atas terang -> bawah lebih gelap) agar batang/pie grafik terlihat 3D/glossy
+        function buatGradasi3D(ctx, hexWarna, tinggi = 200) {
+            const g = ctx.createLinearGradient(0, 0, 0, tinggi);
+            g.addColorStop(0, hexWarna + 'ff');
+            g.addColorStop(1, hexWarna + '88');
+            return g;
+        }
+
+        // Render grafik batang Jumlah Anak Berdasarkan Wilayah Pembinaan, tiap batang diberi warna ceria + gradasi 3D
         function renderWilayahChart() {
             const canvas = document.getElementById('wilayahChart');
             if (!canvas) return;
@@ -2230,26 +2249,131 @@
             });
             const labels = Object.keys(counts).sort();
             const data = labels.map(k => counts[k]);
+            const ctx = canvas.getContext('2d');
 
-            wilayahChartInstance = new Chart(canvas.getContext('2d'), {
+            wilayahChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels,
                     datasets: [{
                         label: 'Jumlah Anak',
                         data,
-                        backgroundColor: labels.map((_, i) => PALET_CERIA[i % PALET_CERIA.length]),
-                        borderRadius: 6,
-                        maxBarThickness: 28
+                        backgroundColor: labels.map((_, i) => buatGradasi3D(ctx, PALET_CERIA[i % PALET_CERIA.length])),
+                        borderRadius: 8,
+                        maxBarThickness: 26
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: true, anchor: 'end', align: 'top', offset: 2,
+                            color: '#334155', font: { size: 8, weight: 'bold' },
+                            formatter: v => v
+                        }
+                    },
                     scales: {
                         x: { ticks: { font: { size: 8 } }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 } }
+                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 }, grace: '15%' }
+                    }
+                }
+            });
+        }
+
+        // Render grafik donat Jumlah Anak Berdasarkan Gender, dengan gradasi 3D & angka langsung pada tiap bagian
+        function renderGenderChart() {
+            const canvas = document.getElementById('genderChart');
+            if (!canvas) return;
+
+            const visible = getVisibleSiswa();
+            if (genderChartInstance) { genderChartInstance.destroy(); genderChartInstance = null; }
+
+            if (visible.length === 0) {
+                tampilkanCanvasKosong(canvas, 'Data dalam proses identifikasi — belum ada data siswa.');
+                return;
+            }
+
+            const lk = visible.filter(s => s.gender === 'Laki-laki').length;
+            const pr = visible.length - lk;
+            const ctx = canvas.getContext('2d');
+            const warna = ['#38bdf8', '#f472b6'];
+
+            genderChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Laki-laki', 'Perempuan'],
+                    datasets: [{
+                        data: [lk, pr],
+                        backgroundColor: warna.map(w => buatGradasi3D(ctx, w, 150)),
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
+                        datalabels: {
+                            display: true, color: '#fff', font: { size: 9, weight: 'bold' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render grafik batang Jumlah Anak Berdasarkan Jenjang Pendidikan, dengan gradasi 3D & angka langsung tampil
+        function renderJenjangChart() {
+            const canvas = document.getElementById('jenjangChart');
+            if (!canvas) return;
+
+            const visible = getVisibleSiswa();
+            if (jenjangChartInstance) { jenjangChartInstance.destroy(); jenjangChartInstance = null; }
+
+            if (visible.length === 0) {
+                tampilkanCanvasKosong(canvas, 'Data dalam proses identifikasi — belum ada data siswa.');
+                return;
+            }
+
+            const jenjangList = [
+                { label: 'TK', color: '#f472b6' },
+                { label: 'SD / MI', color: '#38bdf8' },
+                { label: 'SMP / MTs', color: '#818cf8' },
+                { label: 'SMA / MA', color: '#fb923c' },
+                { label: 'Perguruan Tinggi', color: '#4ade80' }
+            ];
+            const data = jenjangList.map(j => visible.filter(s => (s.jenjangPendidikan || '') === j.label).length);
+            const ctx = canvas.getContext('2d');
+
+            jenjangChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: jenjangList.map(j => j.label),
+                    datasets: [{
+                        label: 'Jumlah Anak',
+                        data,
+                        backgroundColor: jenjangList.map(j => buatGradasi3D(ctx, j.color)),
+                        borderRadius: 8,
+                        maxBarThickness: 26
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: true, anchor: 'end', align: 'top', offset: 2,
+                            color: '#334155', font: { size: 8, weight: 'bold' },
+                            formatter: v => v
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 8 } }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 }, grace: '15%' }
                     }
                 }
             });
@@ -2318,22 +2442,30 @@
                 return;
             }
 
-            kehadiranChartInstance = new Chart(canvas.getContext('2d'), {
+            const ctxKehadiran = canvas.getContext('2d');
+            kehadiranChartInstance = new Chart(ctxKehadiran, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Hadir', data: dataHadir, backgroundColor: '#4ade80', borderRadius: 8, maxBarThickness: 22 },
-                        { label: 'Tidak Hadir', data: dataTidakHadir, backgroundColor: '#fb7185', borderRadius: 8, maxBarThickness: 22 }
+                        { label: 'Hadir', data: dataHadir, backgroundColor: buatGradasi3D(ctxKehadiran, '#4ade80'), borderRadius: 8, maxBarThickness: 22 },
+                        { label: 'Tidak Hadir', data: dataTidakHadir, backgroundColor: buatGradasi3D(ctxKehadiran, '#fb7185'), borderRadius: 8, maxBarThickness: 22 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
+                        datalabels: {
+                            display: true, anchor: 'end', align: 'top', offset: 1,
+                            color: '#334155', font: { size: 7, weight: 'bold' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
                     scales: {
                         x: { ticks: { font: { size: 8 } }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 } }
+                        y: { beginAtZero: true, ticks: { font: { size: 8 }, precision: 0 }, grace: '15%' }
                     }
                 }
             });
@@ -2413,32 +2545,7 @@
             setText('dash-lulus-detail', `${lulus} (${pct(lulus)}%)`);
             setText('dash-dihentikan-detail', `${dihentikan} (${pct(dihentikan)}%)`);
 
-            // Gender
-            const lk = visible.filter(s => s.gender === 'Laki-laki').length;
-            const pr = total - lk;
-            setText('dash-gender-lk', total > 0 ? `${pct(lk)}%` : '0%');
-            setText('dash-gender-pr', total > 0 ? `${pct(pr)}%` : '0%');
-
-            // Jenjang Pendidikan
-            const jenjangList = [
-                { label: 'TK', color: 'bg-pink-400' },
-                { label: 'SD / MI', color: 'bg-blue-500' },
-                { label: 'SMP / MTs', color: 'bg-indigo-500' },
-                { label: 'SMA / MA', color: 'bg-custom-orange' },
-                { label: 'Perguruan Tinggi', color: 'bg-emerald-500' }
-            ];
-            const jenjangWrap = document.getElementById('dash-jenjang-breakdown');
-            if (jenjangWrap) {
-                jenjangWrap.innerHTML = jenjangList.map(j => {
-                    const count = visible.filter(s => (s.jenjangPendidikan || '') === j.label).length;
-                    const persen = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
-                    return `
-                        <div>
-                            <div class="flex justify-between font-bold text-slate-700 mb-0.5"><span>${j.label}</span><span>${count} Siswa</span></div>
-                            <div class="w-full bg-slate-100 h-1.5 rounded-full"><div class="${j.color} h-full rounded-full" style="width: ${persen}%"></div></div>
-                        </div>`;
-                }).join('');
-            }
+            // Gender & Jenjang Pendidikan sekarang ditampilkan sebagai grafik tersendiri (lihat renderGenderChart/renderJenjangChart)
 
             // Pekerjaan Utama Orang Tua (dikelompokkan dari isian bebas pada Data Siswa)
             const pekerjaanWrap = document.getElementById('dash-pekerjaan-ortu-breakdown');
@@ -2512,13 +2619,14 @@
                 return;
             }
 
-            edukasiRutinChartInstance = new Chart(canvas.getContext('2d'), {
+            const ctxEdukasi = canvas.getContext('2d');
+            edukasiRutinChartInstance = new Chart(ctxEdukasi, {
                 type: 'pie',
                 data: {
                     labels: ['Sudah', 'Belum'],
                     datasets: [{
                         data: [sudah, belum],
-                        backgroundColor: ['#4ade80', '#fb7185'],
+                        backgroundColor: [buatGradasi3D(ctxEdukasi, '#4ade80', 150), buatGradasi3D(ctxEdukasi, '#fb7185', 150)],
                         borderColor: '#ffffff',
                         borderWidth: 3
                     }]
@@ -2526,7 +2634,13 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } }
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
+                        datalabels: {
+                            display: true, color: '#fff', font: { size: 9, weight: 'bold' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    }
                 }
             });
         }
@@ -3056,6 +3170,8 @@
                 renderTopHafalan();
                 renderEdukasiRutinChart();
                 renderWilayahChart();
+                renderGenderChart();
+                renderJenjangChart();
                 renderDashboardSummary();
                 setDashboardGreeting();
                 dashboardChartsInitialized = true;
