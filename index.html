@@ -335,9 +335,9 @@
                         <p id="dash-greeting" class="text-xs font-semibold text-emerald-100 uppercase tracking-wider mb-1">Selamat Datang</p>
                         <h2 class="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
                             <i class="fa-solid fa-hand-holding-heart"></i>
-                            Dashboard Monitoring Beasiswa DKM AHM - Rumah Zakat
+                            Dashboard Monitoring Beasiswa Rumah Zakat
                         </h2>
-                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan perkembangan penerima manfaat & dampak program beasiswa.</p>
+                        <p class="text-xs md:text-sm text-emerald-100/90 mt-1.5 max-w-lg">Ringkasan agregat perkembangan penerima manfaat & dampak program beasiswa, tersinkron real-time.</p>
                     </div>
                 </div>
 
@@ -2076,7 +2076,9 @@
             renderProfilPenerimaList();
             if (currentView === 'alumni') renderAlumniList();
             dashboardChartsInitialized = false;
-            if (currentView === 'dashboard') {
+            // Lewati render Dashboard jika sedang dalam proses redirect ke Detail Siswa (dibuka dari tab baru
+            // via ?studentId=...), supaya tidak "menyangkut" di Dashboard akibat status ini keburu dianggap aktif.
+            if (currentView === 'dashboard' && !pendingStudentIdFromUrl) {
                 populateKehadiranBulanOptions();
                 renderKehadiranChart();
                 renderTopHafalan();
@@ -3652,8 +3654,8 @@
         }
 
         function viewStudentDetail(docId) {
-            const s = databaseSiswa.find(x => x._docId === docId) || databaseSiswa[0];
-            if (!s) { showToast('Data siswa tidak ditemukan.', 'error'); return; }
+            const s = databaseSiswa.find(x => x._docId === docId);
+            if (!s) { showToast('Data siswa tidak ditemukan. Coba muat ulang halaman ini.', 'error'); return; }
 
             currentView = 'student-detail';
             document.getElementById('view-dashboard').classList.add('hidden');
@@ -4039,6 +4041,14 @@
             const params = new URLSearchParams(window.location.search);
             pendingStudentIdFromUrl = params.get('studentId');
 
+            if (pendingStudentIdFromUrl) {
+                // Sembunyikan Dashboard SEJAK AWAL (sebelum Firebase/data termuat) supaya tab baru ini
+                // tidak sempat "menyangkut" menampilkan Dashboard sebelum berpindah ke Detail Siswa.
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('breadcrumb-parent').innerText = "Profil Anak Yatim Juara";
+                document.getElementById('breadcrumb-child').innerText = "Memuat data siswa...";
+            }
+
             initFirebase();
             applyAccessControl();
 
@@ -4050,7 +4060,21 @@
                         pendingStudentIdFromUrl = null;
                     }, 100);
                 }
-                // Mode Firestore: ditangani otomatis oleh listener 'siswa' di initFirestoreListeners()
+                // Mode Firestore: ditangani otomatis begitu data tersedia oleh listener 'siswa' di initFirestoreListeners().
+                // Jaring pengaman: jika dalam 6 detik data belum juga termuat (mis. koneksi lambat / dokumen sudah
+                // dihapus), tampilkan pesan yang jelas alih-alih diam-diam kembali ke Dashboard.
+                setTimeout(() => {
+                    if (pendingStudentIdFromUrl) {
+                        const idYangDicari = pendingStudentIdFromUrl;
+                        pendingStudentIdFromUrl = null;
+                        if (databaseSiswa.some(s => s._docId === idYangDicari)) {
+                            viewStudentDetail(idYangDicari);
+                        } else {
+                            showToast('Gagal memuat data siswa (koneksi lambat atau data sudah tidak ada). Silakan muat ulang halaman ini.', 'error', 8000);
+                            switchView('dashboard');
+                        }
+                    }
+                }, 6000);
             } else {
                 switchView('dashboard');
             }
